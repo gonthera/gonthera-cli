@@ -1,0 +1,21 @@
+package br.com.smartverse.gonthera.cli.model;
+
+import br.com.smartverse.gonthera.cli.enuns.Language;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+public class Properties {
+
+    private String mainPackage;
+    private Language language;
+    private String projectName;
+    private List<Entities> entities;
+    private List<Endpoints> endpoints;
+    private List<Enums> enums;
+    private Messaging messaging;
+    private Authorization authorization;
+    private Database database;
+
+}

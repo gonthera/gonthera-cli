@@ -77,26 +77,14 @@ O legado `properties.json` permanece como último fallback. A prioridade é `.go
 - `messaging`: provedores de mensageria; atualmente, `RabbitMq`.
 - `authorization`: customização das classes Java `Authenticate` e `TenantConfiguration`.
 
-Para o Maven localizar e baixar o plugin, adicione o repositório de leitura e o plugin ao `pom.xml` do serviço consumidor:
+Após a publicação no Maven Central, adicione o plugin ao `pom.xml` do serviço consumidor.
+O Maven Central já é o repositório padrão do Maven; remova os blocos de repositório do MyMavenRepo usados apenas pelo Gonthera CLI.
 
 ```xml
-<repositories>
-  <repository>
-    <id>myMavenRepo.read</id>
-    <url>https://mymavenrepo.com/repo/go9Ye7KC7xaSZHqFec9g/</url>
-  </repository>
-</repositories>
-<pluginRepositories>
-  <pluginRepository>
-    <id>myMavenRepo.read</id>
-    <url>https://mymavenrepo.com/repo/go9Ye7KC7xaSZHqFec9g/</url>
-  </pluginRepository>
-</pluginRepositories>
-
 <build>
   <plugins>
     <plugin>
-      <groupId>com.gonthera</groupId>
+      <groupId>br.com.smartverse</groupId>
       <artifactId>gonthera-cli</artifactId>
       <version>2.1.4</version>
     </plugin>
@@ -107,6 +95,8 @@ Para o Maven localizar e baixar o plugin, adicione o repositório de leitura e o
 Após configurar o projeto, o código pode ser gerado com o seguinte comando a partir da raiz:
 
   `mvn gonthera-cli:generate-sources`
+
+Para publicar novas versões, consulte [o guia de deploy no Maven Central](docs/MAVEN_CENTRAL.md).
 
 ### Validação
 

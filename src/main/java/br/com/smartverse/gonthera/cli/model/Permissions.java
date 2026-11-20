@@ -1,0 +1,15 @@
+package br.com.smartverse.gonthera.cli.model;
+
+import br.com.smartverse.gonthera.cli.enuns.PermissionType;
+import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+public class Permissions {
+    private String description = "";
+    private String resource = "";
+    private List<PermissionType> premissions = new ArrayList<>();
+    private boolean permissionDefault = false;
+}

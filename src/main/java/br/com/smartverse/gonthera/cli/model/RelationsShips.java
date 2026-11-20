@@ -1,0 +1,13 @@
+package br.com.smartverse.gonthera.cli.model;
+
+import lombok.Data;
+
+@Data
+public class RelationsShips {
+
+    private String fetchType;
+    private String relationShip;
+    private String mappedBy;
+    private boolean bidirectional = false;
+    private boolean reference = false;
+}

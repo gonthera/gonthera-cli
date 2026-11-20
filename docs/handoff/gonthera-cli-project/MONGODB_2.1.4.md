@@ -68,7 +68,7 @@ O MongoDB usado pela aplicação precisa operar como replica set. O Prisma usa t
 
 Arquivos centrais:
 
-- `src/main/java/com/gonthera/cli/model/Properties.java`;
+- `src/main/java/br/com/smartverse/gonthera/cli/model/Properties.java`;
 - loader e validador de `project.json` e `.gonthera/project.json`;
 - schema/validações de propriedades desconhecidas;
 - metadado `src/generated/static/properties.json`.

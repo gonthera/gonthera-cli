@@ -1,5 +1,5 @@
 {
-  "mainPackage": "com.gonthera.cli",
+  "mainPackage": "br.com.smartverse.gonthera.cli",
   "language": "JAVA",
   "projectName": "church-lite-backend",
   "entities": [

@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-`gonthera-cli` é uma ferramenta de geração de backends distribuída como Maven Plugin (`com.gonthera:gonthera-cli`) e executável standalone. Ela lê `project.json` no diretório em que o Maven/JAR foi executado, com fallback temporário para `properties.json`, e gera persistência, APIs, contratos, mensageria, scripts PostgreSQL e metadados de permissões para Java, .NET e Node.
+`gonthera-cli` é uma ferramenta de geração de backends distribuída como Maven Plugin (`br.com.smartverse:gonthera-cli`) e executável standalone. Ela lê `project.json` no diretório em que o Maven/JAR foi executado, com fallback temporário para `properties.json`, e gera persistência, APIs, contratos, mensageria, scripts PostgreSQL e metadados de permissões para Java, .NET e Node.
 
 Este documento descreve o comportamento consolidado da versão `2.1.4`, fechada em 7 de setembro de 2026. Em caso de divergência com o `README.md`, considere este handoff mais próximo da implementação atual.
 
@@ -33,26 +33,13 @@ Pré-requisitos do gerador:
 - um `project.json` na raiz do serviço consumidor, ou o legado `properties.json` durante a transição;
 - para .NET, uma pasta `static/` já criada na raiz do serviço.
 
-Exemplo de declaração no `pom.xml` do serviço Java:
+Após a publicação no Maven Central, declare o plugin no `pom.xml` do serviço Java. Não é necessário adicionar repositórios. O fluxo de publicação está em [MAVEN_CENTRAL.md](../../MAVEN_CENTRAL.md).
 
 ```xml
-<repositories>
-  <repository>
-    <id>myMavenRepo.read</id>
-    <url>https://mymavenrepo.com/repo/go9Ye7KC7xaSZHqFec9g/</url>
-  </repository>
-</repositories>
-<pluginRepositories>
-  <pluginRepository>
-    <id>myMavenRepo.read</id>
-    <url>https://mymavenrepo.com/repo/go9Ye7KC7xaSZHqFec9g/</url>
-  </pluginRepository>
-</pluginRepositories>
-
 <build>
   <plugins>
     <plugin>
-      <groupId>com.gonthera</groupId>
+      <groupId>br.com.smartverse</groupId>
       <artifactId>gonthera-cli</artifactId>
       <version>2.1.4</version>
     </plugin>
