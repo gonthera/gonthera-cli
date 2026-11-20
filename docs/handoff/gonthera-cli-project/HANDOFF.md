@@ -8,6 +8,22 @@ Este documento descreve o comportamento consolidado da versão `2.1.4`, fechada 
 
 As correções do Node com PostgreSQL foram acumuladas em `2.1.3`. A versão `2.1.4` adiciona MongoDB somente ao Node e mantém Java e .NET sem alterações. O desenho e a matriz de validação estão em [MONGODB_2.1.4.md](MONGODB_2.1.4.md).
 
+## Referências autocontidas para IA
+
+Para tarefas concentradas em uma única linguagem, carregue a referência correspondente
+antes de analisar ou alterar o gerador:
+
+- [Java](../../ai-reference/JAVA.md): Spring/JPA, services, controllers, DTOs,
+  autorização, filtros, PostgreSQL e RabbitMQ;
+- [Node.js](../../ai-reference/NODE.md): Express, Prisma PostgreSQL/MongoDB,
+  converters, relações, consultas, OpenAPI, factories e RabbitMQ;
+- [.NET](../../ai-reference/DOTNET.md): ASP.NET Core, Entity Framework,
+  controllers, repositories, filtros, infraestrutura e RabbitMQ.
+
+Esses documentos explicitam também as fronteiras de código gerado, limitações e
+checklists de alteração segura. O código e os templates continuam sendo a fonte de
+verdade em caso de divergência.
+
 ## Como consumir
 
 Pré-requisitos do gerador:

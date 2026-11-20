@@ -13,6 +13,7 @@
 * O schema Mongo foi validado com `prisma validate`, `prisma generate` e `prisma db push`; a saída TypeScript passou no `typecheck` e os 14 testes locais foram aprovados.
 * A validação funcional em MongoDB replica set confirmou criação e leitura de `Customer` e o ciclo ManyToMany `Customer.tags` / `Tag.customers`: associação, leitura bidirecional, substituição por coleção vazia e preservação da `Tag` compartilhada.
 * Confirmado que MongoDB standalone falha com Prisma `P2031`, sem fallback silencioso que pudesse comprometer a atomicidade das escritas.
+* Adicionadas referências técnicas autocontidas para IA, separadas em Java, Node.js e .NET, com contratos, arquitetura gerada, pontos de extensão, validação e limitações de cada alvo.
 
 ## >2.1.3 - 07-09-2026
 
