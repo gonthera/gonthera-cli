@@ -77,8 +77,10 @@ O legado `properties.json` permanece como último fallback. A prioridade é `.go
 - `messaging`: provedores de mensageria; atualmente, `RabbitMq`.
 - `authorization`: customização das classes Java `Authenticate` e `TenantConfiguration`.
 
-Após a publicação no Maven Central, adicione o plugin ao `pom.xml` do serviço consumidor.
-O Maven Central já é o repositório padrão do Maven; remova os blocos de repositório do MyMavenRepo usados apenas pelo Gonthera CLI.
+O Gonthera CLI está disponível no Maven Central como `br.com.smartverse:gonthera-cli:2.1.4`.
+Para usar, basta adicionar o plugin ao `pom.xml` do serviço consumidor. Não é necessário configurar `repositories`, `pluginRepositories` ou credenciais para baixar o plugin.
+
+Se estiver migrando de uma versão do MyMavenRepo, troque o `groupId` para `br.com.smartverse` e remova os blocos de repositório e as credenciais usados exclusivamente pelo Gonthera CLI.
 
 ```xml
 <build>

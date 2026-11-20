@@ -1,11 +1,16 @@
 # Publicação no Maven Central
 
-O projeto usa o Central Publisher Portal da Sonatype, com as coordenadas
-`br.com.smartverse:gonthera-cli:2.1.4` e licença MIT. O namespace verificado deve
+O Gonthera CLI está publicado no Maven Central com as coordenadas
+`br.com.smartverse:gonthera-cli:2.1.4` e licença MIT. Novas versões são enviadas
+pelo Central Publisher Portal da Sonatype. O namespace verificado deve
 ser `br.com.smartverse` (sem ponto no início). Os pacotes internos agora são
 `br.com.smartverse.gonthera.cli`.
 
-## Preparar a máquina
+Para consumir o plugin, basta declará-lo no POM, conforme a seção
+[Consumir pelo Maven Central](#consumir-pelo-maven-central). As credenciais e a
+chave GPG descritas abaixo são necessárias apenas para publicar novas versões.
+
+## Preparar a máquina para publicação
 
 Use Maven 3.8+ e JDK 11 ou superior. A compilação principal mantém o alvo
 Java 11; as aplicações Spring geradas têm seus próprios requisitos de Java.
@@ -89,13 +94,14 @@ Se a validação falhar, consulte os erros mostrados pelo Portal.
 
 Depois da publicação, aguarde a disponibilização no Maven Central. Uma versão
 publicada é imutável: para mudar o conteúdo, incremente `<version>` no POM.
-A versão `2.1.4` foi mantida porque as novas coordenadas têm outro `groupId`;
-confirme que ela ainda não existe nessas coordenadas antes do primeiro deploy.
+A versão `2.1.4` já foi publicada nessas coordenadas; use uma nova versão
+para o próximo deploy.
 Esse fluxo é de release; versões `-SNAPSHOT` precisam de configuração própria.
 
-## Atualizar os consumidores
+## Consumir pelo Maven Central
 
-Depois que a versão estiver disponível no Central, troque o `groupId` do plugin:
+O Maven Central é o repositório padrão do Maven. Adicione este plugin dentro de
+`build/plugins` no POM do projeto consumidor:
 
 ```xml
 <plugin>
@@ -105,9 +111,11 @@ Depois que a versão estiver disponível no Central, troque o `groupId` do plugi
 </plugin>
 ```
 
-Remova os blocos `repositories` e `pluginRepositories` do MyMavenRepo que eram
-usados exclusivamente para o Gonthera CLI. Com o plugin declarado no POM,
-os comandos continuam iguais:
+Não é necessário configurar `repositories`, `pluginRepositories` ou credenciais
+para baixar o plugin. Se estiver migrando do MyMavenRepo, troque o `groupId`
+antigo para `br.com.smartverse` e remova os blocos de repositório e as credenciais
+usados exclusivamente pelo Gonthera CLI. Preserve as configurações necessárias
+a outros artefatos. Com o plugin declarado no POM, os comandos continuam iguais:
 
 ```bash
 mvn gonthera-cli:validate

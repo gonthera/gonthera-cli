@@ -29,11 +29,11 @@ verdade em caso de divergência.
 Pré-requisitos do gerador:
 
 - JDK 11 ou superior;
-- Maven com acesso ao repositório onde o plugin foi publicado;
+- Maven com acesso ao Maven Central;
 - um `project.json` na raiz do serviço consumidor, ou o legado `properties.json` durante a transição;
 - para .NET, uma pasta `static/` já criada na raiz do serviço.
 
-Após a publicação no Maven Central, declare o plugin no `pom.xml` do serviço Java. Não é necessário adicionar repositórios. O fluxo de publicação está em [MAVEN_CENTRAL.md](../../MAVEN_CENTRAL.md).
+O plugin está disponível no Maven Central como `br.com.smartverse:gonthera-cli:2.1.4`. Declare-o no `pom.xml` do serviço Java, sem configurações adicionais de `repositories`, `pluginRepositories` ou credenciais de download. Remova as configurações antigas do MyMavenRepo usadas exclusivamente pelo Gonthera CLI. O fluxo de publicação de novas versões está em [MAVEN_CENTRAL.md](../../MAVEN_CENTRAL.md).
 
 ```xml
 <build>
