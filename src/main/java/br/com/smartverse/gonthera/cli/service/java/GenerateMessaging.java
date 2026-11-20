@@ -45,13 +45,13 @@ public class GenerateMessaging {
         writeFile(
                 messagingPath.resolve("RabbitExchange.java"),
                 loadWxsd("rabbitexchange")
-                        .replace("<<packageName>>", packageName.concat("_gen"))
+                        .replace("<<packageName>>", packageName)
         );
 
         writeFile(
                 messagingPath.resolve("RabbitConfig.java"),
                 loadWxsd("rabbitconfig")
-                        .replace("<<packageName>>", packageName.concat("_gen"))
+                        .replace("<<packageName>>", packageName)
         );
     }
 
@@ -66,7 +66,7 @@ public class GenerateMessaging {
         writeFile(
                 publisherPath.resolve("RabbitPublisher.java"),
                 loadWxsd("rabbitpublisher")
-                        .replace("<<packageName>>", packageName.concat("_gen"))
+                        .replace("<<packageName>>", packageName)
         );
 
         String model = loadWxsd("rabbitpub");
@@ -74,7 +74,7 @@ public class GenerateMessaging {
             String className = className(publisher, "Pub");
             String beanName = firstCharacterLowerCase(removeSuffix(className, "Pub"));
             String fileContent = model
-                    .replace("<<packageName>>", packageName.concat("_gen"))
+                    .replace("<<packageName>>", packageName)
                     .replace("<<className>>", className)
                     .replace("<<beanName>>", beanName)
                     .replace("<<queue>>", value(publisher.getQueue()))
@@ -97,7 +97,7 @@ public class GenerateMessaging {
             String className = className(subscriber, "Sub");
             String methodName = removeSuffix(className, "Sub");
             String fileContent = model
-                    .replace("<<packageName>>", packageName.concat("_gen"))
+                    .replace("<<packageName>>", packageName)
                     .replace("<<className>>", className)
                     .replace("<<methodName>>", methodName)
                     .replace("<<queue>>", value(subscriber.getQueue()));

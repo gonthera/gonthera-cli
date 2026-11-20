@@ -42,7 +42,7 @@ public class GenerateAuthorization {
             Path targetDirectory = packagePath.resolve("authorization").resolve(subpackage);
             Files.createDirectories(targetDirectory);
             String content = loadWxsd(templateName)
-                    .replace("<<packageName>>", packageName.concat("_gen.authorization"));
+                    .replace("<<packageName>>", packageName.concat(".authorization"));
             content = configureCustomization(content, className, authorization);
             Files.write(
                     targetDirectory.resolve(className.concat(".java")),

@@ -28,6 +28,7 @@ public class RabbitExchangeGenerationTest {
 
         Path annotationFile = packagePath.resolve("messaging/RabbitExchange.java");
         String annotation = new String(Files.readAllBytes(annotationFile), StandardCharsets.UTF_8);
+        assertTrue(annotation.contains("package com.example.service.messaging;"));
         assertTrue(annotation.contains("import java.lang.annotation.Inherited;"));
         assertTrue(annotation.contains("@Inherited\n@Retention(RetentionPolicy.RUNTIME)"));
     }

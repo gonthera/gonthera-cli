@@ -1,15 +1,15 @@
-# Gonthera CLI 2.1.4 — Referência técnica para IA — Java
+# Gonthera CLI 2.2.0 (em desenvolvimento) — Referência técnica para IA — Java
 
 ## Finalidade e status
 
 Este arquivo é contexto operacional para uma IA que precise analisar, corrigir,
 estender ou integrar a geração Java do Gonthera CLI. Ele descreve o comportamento
-consolidado da versão 2.1.4. Não é um tutorial genérico de Spring: é um mapa do
+consolidado da versão 2.1.4 e a nova saída Java da 2.2.0. Não é um tutorial genérico de Spring: é um mapa do
 contrato e das decisões específicas deste repositório.
 
 Use como fontes de verdade, nesta ordem:
 
-1. código em `src/main/java/com/gonthera/cli/service/java` e templates em
+1. código em `src/main/java/br/com/smartverse/gonthera/cli/service/java` e templates em
    `src/main/resources/xsd/java`;
 2. validação compartilhada em `service/common` e modelos em `model`;
 3. este documento;
@@ -22,8 +22,8 @@ Node; o fluxo Java continua direcionado a PostgreSQL.
 
 ## Invariantes que uma IA deve preservar
 
-- A saída gerada fica em pacote terminado em `_gen` e é descartável.
-- Nunca coloque customizações do consumidor dentro de `_gen`.
+- A saída Java fica em `target/generated-sources/gonthera`, sob `mainPackage`, sem `_gen`.
+- Customizações do consumidor ficam em `src/main/java`, com nomes diferentes das classes geradas.
 - O fluxo CRUD é `Controller -> Service -> Repository`.
 - Transações pertencem ao Service, não ao Controller.
 - `serviceAbstract` existe apenas para Java.
@@ -43,7 +43,8 @@ Node; o fluxo Java continua direcionado a PostgreSQL.
 ## Execução e resolução da configuração
 
 O Gonthera CLI é Maven Plugin e JAR standalone. Ele resolve arquivos a partir de
-`System.getProperty("user.dir")`; execute sempre na raiz do serviço consumidor.
+a base do módulo Maven (`project.basedir`). No JAR standalone, usa
+`System.getProperty("user.dir")`; execute na raiz do serviço consumidor.
 
 Ordem de resolução:
 
@@ -65,8 +66,9 @@ java -jar gonthera-cli-2.1.4.jar --validate
 java -jar gonthera-cli-2.1.4.jar
 ```
 
-O goal Maven não está automaticamente associado a uma fase. Se o consumidor quiser
-geração em todo build, deve declarar uma `execution` no próprio `pom.xml`.
+O goal tem fase padrão `generate-sources`. O consumidor deve declarar uma
+`execution` com esse goal no POM para gerar e registrar os fontes antes de compilar
+em cada build. O registro da raiz gerada só vale na sessão atual do Maven.
 
 ## Configuração modular
 
@@ -190,10 +192,10 @@ para anotações e nulabilidade; evite combinações contraditórias.
 
 ## Pipeline e saída gerada
 
-`GenerateJava.generateSource` apaga recursivamente e recria:
+`GenerateJava.generateSource` limpa a raiz `target/generated-sources/gonthera` e recria:
 
 ```text
-src/main/java/<mainPackage convertido em caminho>_gen/
+target/generated-sources/gonthera/<mainPackage convertido em caminho>/
 ├── authorization/
 ├── common/
 ├── controllers/
@@ -442,7 +444,7 @@ authorization/
 }
 ```
 
-Flags `true` removem o stereotype Spring e exigem um bean concreto fora de `_gen`.
+Flags `true` removem o stereotype Spring e exigem um bean concreto em `src/main/java`.
 `Authenticate` expõe hooks protegidos para segredo, bearer token, claims, usuário e
 token. Configure `SECRET_JWT` e JJWT 0.11.5. Sempre limpe `TenantContext` em `finally`.
 
@@ -467,7 +469,9 @@ A conexão é configuração do Spring Boot do consumidor.
 - `postgree.sql` é recriado; revise antes de aplicar.
 - `resources.json` contém permissões CRUD e de endpoints.
 - `properties.json` é a cópia normalizada usada como metadata Java.
-- A pasta `_gen` inteira é removida antes da geração.
+- A raiz gerada do Gonthera é removida antes da geração; o Maven respeita `build/directory`.
+- O Maven registra a raiz com `addCompileSourceRoot`. `clean` remove esses fontes.
+- Fontes legados em `src/main/java/..._gen` são preservados com aviso; o consumidor deve revisá-los e removê-los e atualizar imports de `<mainPackage>_gen` para `<mainPackage>` para evitar tipos obsoletos e beans duplicados.
 - Não execute geração em diretório errado e não armazene código manual na saída.
 
 ## Dependências esperadas no consumidor
@@ -493,7 +497,7 @@ A conexão é configuração do Spring Boot do consumidor.
 
 ## Checklist para uma IA alterar o Java
 
-1. Ler configuração, entidades relacionadas e consumidores que estendem `_gen`.
+1. Ler configuração, entidades relacionadas e consumidores que estendem classes geradas.
 2. Identificar se a mudança pertence a Controller, Service, Repository, Converter,
    template comum, autorização, RabbitMQ ou SQL.
 3. Alterar o template `.mxsd`, não a saída gerada.

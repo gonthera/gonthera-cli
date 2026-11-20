@@ -39,7 +39,7 @@ public class GenerateController {
                 .replace("<<abstract>>",(entity.isControllerAbstract() ? "abstract " : ""))
                 .replace("<<entityNameLowerCase>>",fileName)
                 .replace("<<keyType>>", fieldType)
-                .replace("<<rootPackage>>",packageName.concat("_gen"))
-                .replace("<<packageName>>",packageName.concat("_gen.controllers"));
+                .replace("<<rootPackage>>",packageName)
+                .replace("<<packageName>>",packageName.concat(".controllers"));
     }
 }

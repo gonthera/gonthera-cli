@@ -46,7 +46,11 @@ public class Common {
     }
 
     public static Properties loadProperties(){
-        var path = System.getProperty("user.dir");
+        return loadProperties(Paths.get(System.getProperty("user.dir")));
+    }
+
+    public static Properties loadProperties(Path directory) {
+        String path = directory.toAbsolutePath().toString();
         File gontheraDirectory = new File(path, GONTHERA_DIRECTORY_NAME);
 
         if (gontheraDirectory.isDirectory()) {
@@ -138,7 +142,7 @@ public class Common {
     }
 
     public static String generatedJavaImport(String packageName, String subpackage, boolean enabled) {
-        return enabled ? String.format("import %s_gen.%s.*;", packageName, subpackage) : "";
+        return enabled ? String.format("import %s.%s.*;", packageName, subpackage) : "";
     }
 
     public static String stringFormaterJava(String entityName, String entity, String packagePath) {

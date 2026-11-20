@@ -41,9 +41,9 @@ public class GenerateEntity {
         String fields = getFields(entity);
         return mod.replace("<<tableName>>", Common.splitByUppercase(getTableName(entity)))
                 .replace("<<entityName>>",firstCharacterUpperCase(fileName))
-                .replace("<<rootPackage>>",packageName.concat("_gen"))
+                .replace("<<rootPackage>>",packageName)
                 .replace("<<enumImports>>", generatedJavaImport(packageName, "enums", properties.getEnums() != null && !properties.getEnums().isEmpty()))
-                .replace("<<packageName>>",packageName.concat("_gen.entities"))
+                .replace("<<packageName>>",packageName.concat(".entities"))
                 .replace("<<entityFields>>",fields);
     }
 

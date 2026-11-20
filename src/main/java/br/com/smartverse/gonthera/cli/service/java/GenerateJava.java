@@ -29,11 +29,13 @@ public class GenerateJava {
 
     public static Logger logger = LogManager.getLogger(GenerateJava.class);
 
-    private static Path packagePath = null;
-
     public static void generateSource(Properties prop) {
-        // Limpa os arquivos gerados anteriomente
-        dropAndCreateDir(prop.getMainPackage());
+        Path projectDirectory = Paths.get(loadPath());
+        generateSource(prop, projectDirectory, projectDirectory.resolve("target/generated-sources/gonthera"));
+    }
+
+    public static void generateSource(Properties prop, Path projectDirectory, Path sourcesDirectory) {
+        Path packagePath = dropAndCreateDir(prop.getMainPackage(), projectDirectory, sourcesDirectory);
 
         // gera a classe das entidaeds
         generateEntity(prop.getEntities(),prop.getMainPackage(),packagePath.resolve("entities"));
@@ -73,28 +75,20 @@ public class GenerateJava {
         generateResources(prop.getEntities(),prop.getEndpoints());
     }
 
-    private static void dropAndCreateDir(String packageName){
-
-        String path = loadPath();
-        String pack = packageName.replace(".","/");
-
-        packagePath = Paths.get(String.format("%s/src/main/java/%s_gen",path,pack));
-        Common.resourcePath = Paths.get(String.format("%s/src/main/resources",path));
+    private static Path dropAndCreateDir(String packageName, Path projectDirectory, Path sourcesDirectory) {
+        Path packagePath = sourcesDirectory.resolve(packageName.replace('.', '/'));
+        Common.resourcePath = projectDirectory.resolve("src/main/resources");
         try {
-            dropFiles(packagePath);
-            Files.deleteIfExists(packagePath);
+            dropFiles(sourcesDirectory);
             Files.createDirectories(packagePath);
-            Files.createDirectories(packagePath.resolve("entities"));
-            Files.createDirectories(packagePath.resolve("dtos"));
-            Files.createDirectories(packagePath.resolve("converters"));
-            Files.createDirectories(packagePath.resolve("repositories"));
-            Files.createDirectories(packagePath.resolve("services"));
-            Files.createDirectories(packagePath.resolve("controllers"));
-            Files.createDirectories(packagePath.resolve("endpoints"));
-            Files.createDirectories(packagePath.resolve("enums"));
-            Files.createDirectories(packagePath.resolve("common"));
-        } catch (IOException ex){
-            ex.printStackTrace();
+            for (String directory : new String[]{"entities", "dtos", "converters", "repositories",
+                    "services", "controllers", "endpoints", "enums", "common"}) {
+                Files.createDirectories(packagePath.resolve(directory));
+            }
+            Files.createDirectories(Common.resourcePath);
+            return packagePath;
+        } catch (IOException ex) {
+            throw new IllegalStateException("Could not prepare generated Java sources in " + sourcesDirectory, ex);
         }
     }
 
@@ -110,25 +104,23 @@ public class GenerateJava {
         }
     }
 
-    private static void dropFiles(Path path){
-
-        try{
-            Files.walkFileTree(path, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    System.out.println("delete file " +file.toAbsolutePath());
-                    Files.deleteIfExists(file);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    if (exc != null) throw exc;
-                    Files.deleteIfExists(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        }catch (IOException ex){
+    private static void dropFiles(Path path) throws IOException {
+        if (!Files.exists(path)) {
+            return;
         }
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.deleteIfExists(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                if (exc != null) throw exc;
+                Files.deleteIfExists(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 }

@@ -52,8 +52,8 @@ public class GenerateCommon {
 
 
         if(properties.getLanguage() == Language.JAVA){
-            ret = ret.replace("<<rootPackage>>",packageName.concat("_gen"))
-                    .replace("<<packageName>>",packageName.concat("_gen.common"));
+            ret = ret.replace("<<rootPackage>>",packageName)
+                    .replace("<<packageName>>",packageName.concat(".common"));
         }
         else if(properties.getLanguage() == Language.DOTNET){
             ret = ret.replace("<<nameSpaceName>>",packageName.concat("_Gen"));

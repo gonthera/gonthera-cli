@@ -41,7 +41,7 @@ public class GenerateService {
                 .replace("<<entityName>>", firstCharacterUpperCase(entity.getEntityName()))
                 .replace("<<keyType>>", keyType)
                 .replace("<<keySetter>>", firstCharacterUpperCase(keyField.getFieldName()))
-                .replace("<<rootPackage>>", packageName.concat("_gen"))
-                .replace("<<packageName>>", packageName.concat("_gen.services"));
+                .replace("<<rootPackage>>", packageName)
+                .replace("<<packageName>>", packageName.concat(".services"));
     }
 }

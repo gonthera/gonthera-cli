@@ -1,3 +1,13 @@
+## >2.2.0 - Em desenvolvimento
+
+### Geração Java integrada ao build Maven
+* Fontes Java passam de `src/main/java/<mainPackage>_gen` para `target/generated-sources/gonthera/<mainPackage>`, respeitando `build/directory` no Maven.
+* O goal `generate-sources` usa a fase padrão `generate-sources` e registra a pasta gerada na compilação do projeto consumidor. Declare uma execução do goal no POM para regenerar automaticamente em builds após `clean`.
+* A configuração e a saída Java usam o diretório do módulo Maven, inclusive com `mvn -f` e em projetos com múltiplos módulos.
+* Removido o sufixo `_gen` dos pacotes Java: as classes usam diretamente `<mainPackage>.entities`, `.dtos`, `.services` etc. Os resources em `src/main/resources` são preservados. O JAR standalone usa `target/generated-sources/gonthera` para Java.
+* A regeneração remove fontes obsoletos da pasta de saída do Gonthera. Código manual deve permanecer em `src/main/java`.
+* Quebra de compatibilidade: atualizar imports e referências de `<mainPackage>_gen` para `<mainPackage>`, revisar customizações e remover as fontes geradas antigas em `src/main/java/..._gen` para evitar tipos obsoletos e beans duplicados. A CLI avisa sobre a pasta antiga e não a apaga automaticamente.
+
 ## >2.1.4 - 07-09-2026
 
 ### Node com MongoDB

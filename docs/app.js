@@ -196,34 +196,29 @@ Content-Type: application/json
               { title: 'JPA maduro', text: 'Relacionamentos bidirecionais, autorrelações, filtros e projeções.' },
               { title: 'Segurança integrada', text: 'JWT, permissões, endpoints anônimos e contexto de tenant.' }
             ],
-            installTitle: 'Configure o plugin Maven', installText: 'Adicione o repositório de leitura e fixe a versão publicada no pom.xml.', installLang: 'xml',
-            install: `<repositories>
-  <repository>
-    <id>myMavenRepo.read</id>
-    <url>https://mymavenrepo.com/repo/go9Ye7KC7xaSZHqFec9g/</url>
-  </repository>
-</repositories>
-<pluginRepositories>
-  <pluginRepository>
-    <id>myMavenRepo.read</id>
-    <url>https://mymavenrepo.com/repo/go9Ye7KC7xaSZHqFec9g/</url>
-  </pluginRepository>
-</pluginRepositories>
-<build>
+            installTitle: 'Configure o plugin Maven', installText: 'A 2.2.0 está em desenvolvimento; instale-a localmente ou aguarde sua publicação no Central. Declare a execução abaixo para gerar Java em target antes de compilar, sem o sufixo _gen nos pacotes. Atualize os imports ao migrar. A versão publicada 2.1.4 mantém a saída antiga.', installLang: 'xml',
+            install: `<build>
   <plugins>
     <plugin>
-      <groupId>com.gonthera</groupId>
+      <groupId>br.com.smartverse</groupId>
       <artifactId>gonthera-cli</artifactId>
-      <version>2.1.4</version>
+      <version>2.2.0</version>
+      <executions>
+        <execution>
+          <goals><goal>generate-sources</goal></goals>
+        </execution>
+      </executions>
     </plugin>
   </plugins>
 </build>`,
             commands: `mvn gonthera-cli:validate
-mvn gonthera-cli:generate-sources
+mvn clean compile
+# Somente geração
+mvn generate-sources
 
 # Alternativa com o JAR
-java -jar gonthera-cli-2.1.4.jar --validate
-java -jar gonthera-cli-2.1.4.jar`,
+java -jar gonthera-cli-2.2.0.jar --validate
+java -jar gonthera-cli-2.2.0.jar`,
             project: `{
   "mainPackage": "com.example.customer",
   "projectName": "customer-service",
@@ -247,7 +242,7 @@ public class CustomerEntity {
               orphanRemoval = true, fetch = FetchType.LAZY)
     private ProfileEntity profile;
 }`,
-            output: `src/main/java/com/example/customer_gen/
+            output: `target/generated-sources/gonthera/com/example/customer/
 ├── authorization/
 ├── common/
 ├── controllers/
@@ -320,7 +315,7 @@ customerChangedPub.publish(customerDto);`,
 // Variável exigida pelo comportamento padrão
 SECRET_JWT=uma-chave-hmac-segura`,
             securityNotes: ['@Anonymous libera endpoints configurados como anônimos.', 'Authenticate possui hooks protegidos para customização.', 'Use TenantContext.clear() em finally ao terminar a requisição.', 'Adicione jjwt-api, jjwt-impl e jjwt-jackson 0.11.5.'],
-            runtimeTitle: 'Use as classes geradas pelo Spring', runtimeText: 'A aplicação consumidora fornece suas configurações e especializações fora de _gen.', runtimeLang: 'java',
+            runtimeTitle: 'Use as classes geradas pelo Spring', runtimeText: 'A aplicação consumidora fornece suas configurações e especializações em src/main/java, com nomes distintos das classes geradas em target.', runtimeLang: 'java',
             runtimeCode: `@SpringBootApplication
 public class CustomerApplication {
     public static void main(String[] args) {

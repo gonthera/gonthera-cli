@@ -22,8 +22,36 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 public class JavaOutputLayoutTest {
+
+    @Test
+    public void regenerationRemovesStaleSourcesAndKeepsHandwrittenCode() throws Exception {
+        Path root = Files.createTempDirectory("gonthera-java-regeneration-");
+        Path sources = root.resolve("target/generated-sources/gonthera");
+        Path manual = root.resolve("src/main/java/com/example/Application.java");
+        Files.createDirectories(manual.getParent());
+        Files.writeString(manual, "// handwritten");
+        Properties project = project();
+        Properties previous = Common.properties;
+        Path previousResources = Common.resourcePath;
+        try {
+            Common.properties = project;
+            GenerateJava.generateSource(project, root, sources);
+            Path entity = sources.resolve("com/example/service/entities/CustomerEntity.java");
+            assertTrue(Files.isRegularFile(entity));
+            project.setEntities(Collections.emptyList());
+            GenerateJava.generateSource(project, root, sources);
+            assertFalse(Files.exists(entity));
+            assertTrue(Files.isRegularFile(sources.resolve("com/example/service/common/CrudController.java")));
+            assertTrue(Files.readString(manual).equals("// handwritten"));
+            assertFalse(Files.exists(root.resolve("src/main/java/com/example/service")));
+        } finally {
+            Common.properties = previous;
+            Common.resourcePath = previousResources;
+        }
+    }
 
     @Test
     public void generatesJavaSourcesInDedicatedPackages() throws Exception {
@@ -39,39 +67,45 @@ public class JavaOutputLayoutTest {
             System.setProperty("user.dir", previousDirectory);
         }
 
-        Path generated = root.resolve("src/main/java/com/example/service_gen");
-        assertPackage(generated.resolve("entities/CustomerEntity.java"), "com.example.service_gen.entities");
-        assertPackage(generated.resolve("dtos/CustomerDTO.java"), "com.example.service_gen.dtos");
-        assertPackage(generated.resolve("converters/CustomerDTOConverter.java"), "com.example.service_gen.converters");
-        assertPackage(generated.resolve("repositories/CustomerRepository.java"), "com.example.service_gen.repositories");
-        assertPackage(generated.resolve("services/CustomerService.java"), "com.example.service_gen.services");
+        Path generated = root.resolve("target/generated-sources/gonthera/com/example/service");
+        assertFalse(Files.exists(root.resolve("target/generated-sources/gonthera/com/example/service_gen")));
+        try (java.util.stream.Stream<Path> paths = Files.walk(generated)) {
+            for (Path source : (Iterable<Path>) paths.filter(path -> path.toString().endsWith(".java"))::iterator) {
+                assertFalse(source + " still references a legacy generated package", readFile(source).contains("_gen"));
+            }
+        }
+        assertPackage(generated.resolve("entities/CustomerEntity.java"), "com.example.service.entities");
+        assertPackage(generated.resolve("dtos/CustomerDTO.java"), "com.example.service.dtos");
+        assertPackage(generated.resolve("converters/CustomerDTOConverter.java"), "com.example.service.converters");
+        assertPackage(generated.resolve("repositories/CustomerRepository.java"), "com.example.service.repositories");
+        assertPackage(generated.resolve("services/CustomerService.java"), "com.example.service.services");
         String service = readFile(generated.resolve("services/CustomerService.java"));
         assertTrue(service.contains("PageRequest.of(input.offset, input.size, createSort(input.order))"));
         assertTrue(service.contains("Sort.Direction.fromString(direction)"));
         assertTrue(service.contains("Invalid order: "));
-        assertPackage(generated.resolve("controllers/CustomerController.java"), "com.example.service_gen.controllers");
-        assertPackage(generated.resolve("endpoints/FindCustomer.java"), "com.example.service_gen.endpoints");
-        assertPackage(generated.resolve("endpoints/FindCustomerOutput.java"), "com.example.service_gen.endpoints");
-        assertPackage(generated.resolve("enums/Status.java"), "com.example.service_gen.enums");
-        assertPackage(generated.resolve("common/CrudController.java"), "com.example.service_gen.common");
-        assertPackage(generated.resolve("authorization/exception/ServiceException.java"), "com.example.service_gen.authorization.exception");
-        assertPackage(generated.resolve("authorization/permission/PermissionType.java"), "com.example.service_gen.authorization.permission");
-        assertPackage(generated.resolve("authorization/permission/Permissions.java"), "com.example.service_gen.authorization.permission");
-        assertPackage(generated.resolve("authorization/security/Authenticate.java"), "com.example.service_gen.authorization.security");
-        assertPackage(generated.resolve("authorization/security/Roles.java"), "com.example.service_gen.authorization.security");
-        assertPackage(generated.resolve("authorization/security/UserSupplier.java"), "com.example.service_gen.authorization.security");
-        assertPackage(generated.resolve("authorization/stereotype/Anonymous.java"), "com.example.service_gen.authorization.stereotype");
-        assertPackage(generated.resolve("authorization/stereotype/SecureResource.java"), "com.example.service_gen.authorization.stereotype");
-        assertPackage(generated.resolve("authorization/tenant/TenantConfiguration.java"), "com.example.service_gen.authorization.tenant");
-        assertPackage(generated.resolve("authorization/tenant/TenantContext.java"), "com.example.service_gen.authorization.tenant");
+        assertPackage(generated.resolve("controllers/CustomerController.java"), "com.example.service.controllers");
+        assertPackage(generated.resolve("endpoints/FindCustomer.java"), "com.example.service.endpoints");
+        assertPackage(generated.resolve("endpoints/FindCustomerOutput.java"), "com.example.service.endpoints");
+        assertPackage(generated.resolve("enums/Status.java"), "com.example.service.enums");
+        assertPackage(generated.resolve("common/CrudController.java"), "com.example.service.common");
+        assertPackage(generated.resolve("authorization/exception/ServiceException.java"), "com.example.service.authorization.exception");
+        assertPackage(generated.resolve("authorization/permission/PermissionType.java"), "com.example.service.authorization.permission");
+        assertPackage(generated.resolve("authorization/permission/Permissions.java"), "com.example.service.authorization.permission");
+        assertPackage(generated.resolve("authorization/security/Authenticate.java"), "com.example.service.authorization.security");
+        assertPackage(generated.resolve("authorization/security/Roles.java"), "com.example.service.authorization.security");
+        assertPackage(generated.resolve("authorization/security/UserSupplier.java"), "com.example.service.authorization.security");
+        assertPackage(generated.resolve("authorization/stereotype/Anonymous.java"), "com.example.service.authorization.stereotype");
+        assertPackage(generated.resolve("authorization/stereotype/SecureResource.java"), "com.example.service.authorization.stereotype");
+        assertPackage(generated.resolve("authorization/tenant/TenantConfiguration.java"), "com.example.service.authorization.tenant");
+        assertPackage(generated.resolve("authorization/tenant/TenantContext.java"), "com.example.service.authorization.tenant");
         String dto = readFile(generated.resolve("dtos/CustomerDTO.java"));
         assertTrue(dto.matches("(?s).*public\\s+\\S+\\s+id;.*"));
         assertTrue(dto.contains("public Status status;"));
         String endpoint = readFile(generated.resolve("endpoints/FindCustomer.java"));
-        assertTrue(endpoint.contains("import com.example.service_gen.authorization.stereotype.Anonymous;"));
+        assertTrue(endpoint.contains("import com.example.service.authorization.stereotype.Anonymous;"));
         assertTrue(endpoint.contains("@Anonymous"));
         String specificationFilter = readFile(generated.resolve("common/SpecificationFilter.java"));
-        assertTrue(specificationFilter.contains("import com.example.service_gen.authorization.exception.ServiceException;"));
+        assertTrue(specificationFilter.contains("import com.example.service.authorization.exception.ServiceException;"));
         assertTrue(specificationFilter.contains("gte|lte|ge|le"));
         assertTrue(specificationFilter.contains("LocalDate.parse(rawValue)"));
         assertTrue(specificationFilter.contains("LocalDateTime.parse(rawValue)"));
@@ -102,7 +136,7 @@ public class JavaOutputLayoutTest {
             System.setProperty("user.dir", previousDirectory);
         }
 
-        String service = readFile(root.resolve("src/main/java/com/example/service_gen/services/CustomerService.java"));
+        String service = readFile(root.resolve("target/generated-sources/gonthera/com/example/service/services/CustomerService.java"));
         assertTrue(service.contains("public abstract class CustomerService"));
         assertTrue(!service.contains("\n@Service\n"));
     }
@@ -125,14 +159,14 @@ public class JavaOutputLayoutTest {
             System.setProperty("user.dir", previousDirectory);
         }
 
-        String authenticate = readFile(root.resolve("src/main/java/com/example/service_gen/authorization/security/Authenticate.java"));
+        String authenticate = readFile(root.resolve("target/generated-sources/gonthera/com/example/service/authorization/security/Authenticate.java"));
         assertTrue(authenticate.contains("public abstract class Authenticate"));
         assertTrue(!authenticate.contains("import org.springframework.stereotype.Service;"));
         assertTrue(authenticate.contains("protected String resolveSecret()"));
         assertTrue(authenticate.contains("protected String extractToken("));
         assertTrue(authenticate.contains("protected io.jsonwebtoken.Claims parseClaims("));
 
-        String tenantConfiguration = readFile(root.resolve("src/main/java/com/example/service_gen/authorization/tenant/TenantConfiguration.java"));
+        String tenantConfiguration = readFile(root.resolve("target/generated-sources/gonthera/com/example/service/authorization/tenant/TenantConfiguration.java"));
         assertTrue(tenantConfiguration.contains("public abstract class TenantConfiguration"));
         assertTrue(!tenantConfiguration.contains("import org.springframework.stereotype.Component;"));
     }

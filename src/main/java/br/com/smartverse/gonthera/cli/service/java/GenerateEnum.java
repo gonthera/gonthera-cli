@@ -35,7 +35,7 @@ public class GenerateEnum {
 
         String fields = getEnum(enumeration);
         return mod.replace("<<enumNameName>>",firstCharacterUpperCase(fileName))
-                .replace("<<packageName>>",packageName.concat("_gen.enums"))
+                .replace("<<packageName>>",packageName.concat(".enums"))
                 .replace("<<nameSpaceName>>",packageName.concat("_Gen"))
                 .replace("<<projetcName>>",packageName)
                 .replace("<<enumFields>>",fields);

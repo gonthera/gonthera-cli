@@ -77,7 +77,8 @@ O legado `properties.json` permanece como último fallback. A prioridade é `.go
 - `messaging`: provedores de mensageria; atualmente, `RabbitMq`.
 - `authorization`: customização das classes Java `Authenticate` e `TenantConfiguration`.
 
-O Gonthera CLI está disponível no Maven Central como `br.com.smartverse:gonthera-cli:2.1.4`.
+A versão publicada no Maven Central é `br.com.smartverse:gonthera-cli:2.1.4`.
+A versão `2.2.0`, em desenvolvimento, passa a gerar os fontes Java em `target/generated-sources/gonthera`; o exemplo abaixo usa essa versão e exige sua publicação ou instalação local com `mvn install`.
 Para usar, basta adicionar o plugin ao `pom.xml` do serviço consumidor. Não é necessário configurar `repositories`, `pluginRepositories` ou credenciais para baixar o plugin.
 
 Se estiver migrando de uma versão do MyMavenRepo, troque o `groupId` para `br.com.smartverse` e remova os blocos de repositório e as credenciais usados exclusivamente pelo Gonthera CLI.
@@ -88,15 +89,34 @@ Se estiver migrando de uma versão do MyMavenRepo, troque o `groupId` para `br.c
     <plugin>
       <groupId>br.com.smartverse</groupId>
       <artifactId>gonthera-cli</artifactId>
-      <version>2.1.4</version>
+      <version>2.2.0</version>
+      <executions>
+        <execution>
+          <goals>
+            <goal>generate-sources</goal>
+          </goals>
+        </execution>
+      </executions>
     </plugin>
   </plugins>
 </build>
 ```
 
-Após configurar o projeto, o código pode ser gerado com o seguinte comando a partir da raiz:
+Com essa execução configurada, `mvn clean compile` e `mvn clean package` geram os fontes Java antes de compilar. O plugin registra `target/generated-sources/gonthera` como fonte do projeto, sem precisar do build-helper. Se o POM personalizar `build/directory`, a saída fica em `<build/directory>/generated-sources/gonthera`.
 
-  `mvn gonthera-cli:generate-sources`
+O Java não usa mais o sufixo `_gen`: com `mainPackage: "com.example.service"`, as classes ficam em `com.example.service.entities`, `.dtos`, `.services` e demais subpacotes. O código manual fica em `src/main/java`, com nomes de classe distintos dos gerados quando compartilhar o mesmo pacote. Os resources continuam em `src/main/resources`. O `mvn clean` remove os fontes gerados junto com os demais arquivos de build.
+
+Para migrar da 2.1.4, confira se há customizações em `src/main/java/<mainPackage convertido em caminho>_gen`, mova-as para `src/main/java`, atualize os imports e as referências de `<mainPackage>_gen` para `<mainPackage>` e remova as fontes geradas antigas antes de compilar, evitando tipos obsoletos e beans duplicados. A CLI preserva esses arquivos antigos e emite um aviso ao encontrá-los.
+
+A geração isolada continua disponível:
+
+```bash
+mvn gonthera-cli:generate-sources
+```
+
+O registro da pasta vale para a execução atual do Maven. Para compilar em uma execução posterior, mantenha o goal configurado em `executions`, conforme o exemplo. Na IDE, recarregue o projeto Maven e execute `mvn generate-sources` para criar os arquivos.
+
+Com o JAR standalone 2.2.0, o Java também é gerado em `target/generated-sources/gonthera`. Para integrar a geração e a compilação no Maven, use o plugin com a execução acima.
 
 Para publicar novas versões, consulte [o guia de deploy no Maven Central](docs/MAVEN_CENTRAL.md).
 
@@ -410,9 +430,9 @@ converters/CostCenterDTOConverter.java
 Use o converter para transformar dados entre a camada de API e a camada de persistência:
 
 ```java
-import com.example.backend_gen.converters.CostCenterDTOConverter;
-import com.example.backend_gen.dtos.CostCenterDTO;
-import com.example.backend_gen.entities.CostCenterEntity;
+import com.example.backend.converters.CostCenterDTOConverter;
+import com.example.backend.dtos.CostCenterDTO;
+import com.example.backend.entities.CostCenterEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -500,7 +520,7 @@ abaixo um exemplo da sintaxe:
 Projetos Java não precisam mais adicionar o antigo `authorization-backend`. O Gonthera gera os componentes necessários em:
 
 ```text
-src/main/java/<mainPackage convertido em caminho>_gen/authorization/
+target/generated-sources/gonthera/<mainPackage convertido em caminho>/authorization/
 ├── exception/ServiceException.java
 ├── permission/PermissionType.java
 ├── permission/Permissions.java
@@ -524,7 +544,7 @@ Por padrão, `Authenticate` recebe `@Service` e `TenantConfiguration` recebe `@C
 }
 ```
 
-Com um flag `true`, a classe correspondente é gerada como abstrata, sem o stereotype Spring. Seus métodos continuam com implementação funcional e podem ser herdados, chamados com `super` ou sobrescritos seletivamente. O consumidor deve criar os beans concretos fora de `_gen`:
+Com um flag `true`, a classe correspondente é gerada como abstrata, sem o stereotype Spring. Seus métodos continuam com implementação funcional e podem ser herdados, chamados com `super` ou sobrescritos seletivamente. O consumidor deve criar os beans concretos em `src/main/java`, fora de `target/generated-sources/gonthera`:
 
 ```java
 @Service
@@ -649,7 +669,7 @@ Exemplo:
 Quando `messaging.RabbitMq` é configurado em projeto Java, o gerador cria arquivos dentro de:
 
 ```text
-src/main/java/<mainPackage convertido em caminho>_gen/messaging/
+target/generated-sources/gonthera/<mainPackage convertido em caminho>/messaging/
 ```
 
 Arquivos comuns:
@@ -691,15 +711,15 @@ Arquivos de subscriber:
 
 #### Configuração da exchange Java
 
-A exchange não é definida dentro do `project.json`. O serviço consumidor deve criar uma classe concreta fora do diretório `_gen` e informar a exchange via `@RabbitExchange`.
+A exchange não é definida dentro do `project.json`. O serviço consumidor deve criar uma classe concreta em `src/main/java`, fora dos fontes gerados em `target`, e informar a exchange via `@RabbitExchange`.
 
 Exemplo:
 
 ```java
 package com.example.profilebackend.messaging;
 
-import com.example.profilebackend_gen.messaging.RabbitConfig;
-import com.example.profilebackend_gen.messaging.RabbitExchange;
+import com.example.profilebackend.messaging.RabbitConfig;
+import com.example.profilebackend.messaging.RabbitExchange;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -751,7 +771,7 @@ Uso em uma classe do serviço consumidor:
 ```java
 package com.example.profilebackend.services;
 
-import com.example.profilebackend_gen.messaging.pub.NotificationPub;
+import com.example.profilebackend.messaging.pub.NotificationPub;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -803,14 +823,14 @@ O método `Publish` envia a mensagem para a exchange configurada no atributo `Ra
 
 #### Ouvindo mensagens em Java
 
-Subscribers são gerados como classes abstratas para manter a lógica de negócio fora de `_gen`.
+Subscribers Java são gerados como classes abstratas; implemente a lógica de negócio em `src/main/java`.
 
 Com o exemplo acima, o gerador cria `NotificationChatSub`. O serviço consumidor deve criar uma implementação concreta:
 
 ```java
 package com.example.profilebackend.messaging;
 
-import com.example.profilebackend_gen.messaging.sub.NotificationChatSub;
+import com.example.profilebackend.messaging.sub.NotificationChatSub;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -919,7 +939,7 @@ Configure a conexão RabbitMQ no `appsettings.json`:
 
 #### Cuidados
 
-* Não edite os arquivos gerados em `_gen`; implemente configurações e controllers concretos fora desse diretório.
+* Não edite arquivos gerados. No Java, ficam em `target/generated-sources/gonthera`, e as customizações ficam em `src/main/java`; no .NET, mantenha as customizações fora de `_gen`.
 * `routingKey` deve ser informado nos publishers.
 * Em Java, a classe concreta que estende `RabbitConfig` deve ter `@Configuration` e `@RabbitExchange`.
 * Em .NET, a classe concreta que estende `RabbitConfig` deve ter `[RabbitExchange("...")]` e ser registrada no DI como `RabbitConfig`.

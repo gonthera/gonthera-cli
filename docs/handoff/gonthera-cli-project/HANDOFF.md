@@ -24,6 +24,22 @@ Esses documentos explicitam também as fronteiras de código gerado, limitaçõe
 checklists de alteração segura. O código e os templates continuam sendo a fonte de
 verdade em caso de divergência.
 
+## Java 2.2.0 — saída em target (em desenvolvimento)
+
+A 2.1.4 permanece a versão publicada no Central. A 2.2.0 move os fontes Java para
+`target/generated-sources/gonthera/<mainPackage convertido em caminho>`,
+sem o sufixo `_gen` nos pacotes Java: `<mainPackage>.entities`, `.dtos`, `.services` etc. No Maven, respeita `build/directory`, resolve a
+configuração pela base do módulo e registra a raiz gerada com `addCompileSourceRoot`.
+O goal tem fase padrão `generate-sources`; declare uma execução no POM para que
+`mvn clean compile` regenere antes de compilar. Veja o exemplo no README.
+O registro da raiz vale para a sessão atual do Maven; não dependa de um comando
+manual de geração anterior ao build. O JAR standalone usa `target` como base.
+Resources continuam em `src/main/resources`. .NET e Node mantêm suas saídas.
+A limpeza afeta apenas a raiz gerada do Gonthera. Para migrar, revise customizações
+e atualize imports de `<mainPackage>_gen` para `<mainPackage>`. Remova fontes
+antigos em `src/main/java/..._gen`; a CLI avisa e preserva essa
+pasta antiga para que a revisão seja feita pelo consumidor.
+
 ## Como consumir
 
 Pré-requisitos do gerador:
@@ -301,7 +317,7 @@ Um tipo que não seja primitivo nem enum é tratado como entidade: `FooEntity`/`
 - use `GET` ou `POST`; outras strings podem produzir código inválido;
 - Java gera uma interface por endpoint e ignora `grouper`;
 - .NET usa `grouper` para reunir métodos em uma classe `*Primitive`; use `""` quando não houver grupo;
-- `metadata.anonymous: true` gera a anotação própria `<mainPackage>_gen.authorization.stereotype.Anonymous` no Java ou `[AllowAnonymous]` no .NET;
+- `metadata.anonymous: true` gera a anotação própria `<mainPackage>.authorization.stereotype.Anonymous` no Java ou `[AllowAnonymous]` no .NET;
 - um parâmetro de entrada com tipo `requestdata`/`responsedata` ativa os envelopes genéricos e impede a geração da classe Input/Output específica;
 - a grafia `premissions` está errada no código, mas é a chave JSON que deve ser usada;
 - permissões aceitas: `ALL`, `VIEW`, `CREATE`, `UPDATE`, `DELETE`.
@@ -429,8 +445,8 @@ O serviço consumidor deve criar uma configuração concreta fora do diretório 
 ```java
 package com.example.service.messaging;
 
-import com.example.service_gen.messaging.RabbitConfig;
-import com.example.service_gen.messaging.RabbitExchange;
+import com.example.service.messaging.RabbitConfig;
+import com.example.service.messaging.RabbitExchange;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -469,7 +485,7 @@ Subscribers são gerados como classes abstratas. No Java, o serviço consumidor 
 ```java
 package com.example.service.messaging;
 
-import com.example.service_gen.messaging.sub.NotificationChatSub;
+import com.example.service.messaging.sub.NotificationChatSub;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -494,7 +510,7 @@ builder.Services.AddHostedService<NotificationChatListener>();
 O diretório inteiro abaixo é apagado e recriado a cada execução:
 
 ```text
-src/main/java/<mainPackage convertido em caminho>_gen/
+target/generated-sources/gonthera/<mainPackage convertido em caminho>/
 ```
 
 São gerados, conforme a configuração:
@@ -511,7 +527,7 @@ São gerados, conforme a configuração:
 - `authorization/` com exceções, contratos de permissões, autenticação JWT, anotações e contexto de tenant;
 - abstrações RabbitMQ em `messaging/`, `messaging/pub/` e `messaging/sub/` quando `messaging.RabbitMq` é configurado;
 
-Cada subdiretório corresponde a um subpackage Java, por exemplo `com.example.service_gen.entities`. A mudança é incompatível com imports antigos que apontavam diretamente para `com.example.service_gen`.
+Cada subdiretório corresponde a um subpackage Java, por exemplo `com.example.service.entities`. A mudança é incompatível com imports antigos que apontavam diretamente para `com.example.service`.
 
 Controllers Java delegam o CRUD ao service correspondente. Quando `serviceAbstract: true`, a validação emite um aviso porque a CLI não consegue confirmar se o projeto consumidor fornece a implementação concreta necessária.
 
@@ -818,9 +834,9 @@ Java pressupõe, no mínimo:
 - JJWT `0.11.5` (`jjwt-api`, `jjwt-impl` e `jjwt-jackson`) para as classes de autenticação geradas;
 - a variável de ambiente `SECRET_JWT`, com uma chave compatível com HMAC, quando `Authenticate` for usado.
 
-O Java gerado não depende mais do artefato `authorization-backend`. Os componentes equivalentes são escritos em `<mainPackage>_gen.authorization`, com os subpackages `exception`, `permission`, `security`, `stereotype` e `tenant`. `ValidatePermission` não é gerado porque a implementação da biblioteca anterior estava incompleta.
+O Java gerado não depende mais do artefato `authorization-backend`. Os componentes equivalentes são escritos em `<mainPackage>.authorization`, com os subpackages `exception`, `permission`, `security`, `stereotype` e `tenant`. `ValidatePermission` não é gerado porque a implementação da biblioteca anterior estava incompleta.
 
-Ao migrar um serviço existente, substitua imports manuais de `com.potatotech.authorization` pelos tipos equivalentes em `<mainPackage>_gen.authorization`. Isso inclui interceptors que chamam `TenantConfiguration.validAnonymous`: eles precisam usar a classe gerada para reconhecer a nova anotação `@Anonymous`. Como todo conteúdo `_gen`, essas classes não devem ser editadas manualmente.
+Ao migrar um serviço existente, substitua imports manuais de `com.potatotech.authorization` pelos tipos equivalentes em `<mainPackage>.authorization`. Isso inclui interceptors que chamam `TenantConfiguration.validAnonymous`: eles precisam usar a classe gerada para reconhecer a nova anotação `@Anonymous`. Como todo fonte gerado em `target`, essas classes não devem ser editadas manualmente.
 
 ### Customização da autorização Java
 
@@ -870,7 +886,7 @@ O SQL é direcionado a PostgreSQL. Ele gera tabelas, PKs, FKs e tabelas de junç
 
 ## Cuidados operacionais
 
-- A geração é destrutiva nos diretórios `_gen`; não coloque código manual neles.
+- A geração é destrutiva na saída Java em `target/generated-sources/gonthera` e no `_gen` do .NET; mantenha código manual fora dessas saídas.
 - Execute sempre na raiz correta: a resolução usa `System.getProperty("user.dir")`.
 - Mantenha nomes em lower camel case. Vários trechos apenas alteram o primeiro caractere e não sanitizam identificadores.
 - Garanta uma única PK por entidade. O Node rejeita uma entidade sem exatamente uma chave escalar antes de limpar a saída; no MongoDB 2.1.4 essa chave deve usar `fieldType: "uuid"`. Os demais alvos ainda possuem caminhos legados menos claros para contratos inválidos.
@@ -896,6 +912,6 @@ O SQL é direcionado a PostgreSQL. Ele gera tabelas, PKs, FKs e tabelas de junç
 3. Criar `static/` antes de gerar para .NET.
 4. Confirmar uma PK e metadata completa em cada entidade.
 5. Confirmar ambos os lados e a ordem dos autorrelacionamentos.
-6. Executar o gerador em uma branch limpa e revisar todos os arquivos `_gen`, SQL e permissões.
+6. Executar o gerador em uma branch limpa e revisar os fontes gerados, SQL e permissões.
 7. Compilar o serviço consumidor para validar dependências, templates e integrações que não podem ser verificadas apenas pelo contrato JSON.
-8. Nunca editar fontes `_gen` manualmente; customizações devem ficar fora deles ou ser incorporadas aos templates desta biblioteca.
+8. Nunca editar fontes gerados manualmente; customizações devem ficar fora deles ou ser incorporadas aos templates desta biblioteca.

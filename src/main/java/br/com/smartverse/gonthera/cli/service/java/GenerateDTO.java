@@ -37,9 +37,9 @@ public class GenerateDTO {
         String fields = getDTO(entity);
         String fieldsNotTypes = getDTONotTypes(entity);
         return mod.replace("<<entityName>>",firstCharacterUpperCase(fileName))
-                .replace("<<rootPackage>>",packageName.concat("_gen"))
+                .replace("<<rootPackage>>",packageName)
                 .replace("<<enumImports>>", generatedJavaImport(packageName, "enums", properties.getEnums() != null && !properties.getEnums().isEmpty()))
-                .replace("<<packageName>>",packageName.concat("_gen.dtos"))
+                .replace("<<packageName>>",packageName.concat(".dtos"))
                 .replace("<<entityFields>>",fields)
                 .replace("<<entityFieldsNoType>>",fieldsNotTypes);
     }

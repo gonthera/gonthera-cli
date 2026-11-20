@@ -23,7 +23,7 @@ Validation is available without generation through `mvn gonthera-cli:validate` o
 
 Supported targets:
 
-- `JAVA`: Spring/JPA style generation under `src/main/java/<mainPackage>_gen`, organized into `entities`, `dtos`, `converters`, `repositories`, `services`, `controllers`, `endpoints`, `enums`, `common`, and `messaging` subpackages; resources remain under `src/main/resources`.
+- `JAVA`: Spring/JPA style generation under `target/generated-sources/gonthera/<mainPackage>` since 2.2.0 (respect Maven `build/directory` and register the generated root for compilation), organized into `entities`, `dtos`, `converters`, `repositories`, `services`, `controllers`, `endpoints`, `enums`, `common`, and `messaging` subpackages; resources remain under `src/main/resources`.
 
 Java CRUD controllers delegate persistence, conversion, filtering, pagination, and transactions to generated `*Service` classes. `serviceAbstract: false` generates a concrete Spring `@Service`; `serviceAbstract: true` generates an abstract class without `@Service` and must produce a validator warning that the consumer needs a concrete Spring bean. Prefer `generateDefaultControllers` and `controllerAbstract`; accept `generateDefaultHandlers` and `handlerAbstract` only as deprecated aliases with warnings and new-name precedence.
 - `DOTNET`: C# generation under `<mainPackage>_gen`, physically organized into `Entities`, `Dtos`, `Converters`, `Repositories`, `Controllers`, `Endpoints`, `Enums`, `Common`, `Data`, and `Messaging`; static files remain under `static`. Generated C# files currently retain the shared root namespace `<mainPackage>.<mainPackage>_Gen` despite the physical folders.
@@ -31,7 +31,7 @@ Java CRUD controllers delegate persistence, conversion, filtering, pagination, a
 - SQL: PostgreSQL script generation as `postgree.sql`.
 - Messaging: RabbitMQ generation under `messaging.RabbitMq`.
 
-Java authorization classes are generated under `<mainPackage>_gen.authorization`. `authorization.authenticateAbstract` and `authorization.tenantConfigurationAbstract` default to `false`. When enabled, the corresponding generated class is abstract and has no Spring stereotype, so the consumer must provide one concrete Spring bean outside `_gen`.
+Java packages no longer use `_gen` since 2.2.0. Java authorization classes are generated under `<mainPackage>.authorization`. `authorization.authenticateAbstract` and `authorization.tenantConfigurationAbstract` default to `false`. When enabled, the corresponding generated class is abstract and has no Spring stereotype, so the consumer must provide one concrete Spring bean in handwritten `src/main/java` sources.
 
 ## Java CRUD Architecture
 
@@ -105,15 +105,15 @@ With `serviceAbstract: true`:
 - the generated abstract class is not a Spring bean and cannot satisfy controller injection by itself;
 - the consumer must provide at least one concrete subclass registered as a Spring bean;
 - normally there should be exactly one bean assignable to `<Entity>Service`; if there are multiple implementations, the consumer must resolve injection with `@Primary` or `@Qualifier`;
-- the implementation must live outside generated `_gen` sources, because regeneration replaces generated files.
+- the implementation must live in handwritten `src/main/java` sources, outside `target/generated-sources/gonthera`, because regeneration replaces generated files.
 
 Recommended consumer implementation:
 
 ```java
 package com.example.service.services;
 
-import com.example.service_gen.dtos.CustomerDTO;
-import com.example.service_gen.services.CustomerService;
+import com.example.service.dtos.CustomerDTO;
+import com.example.service.services.CustomerService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -144,7 +144,7 @@ Recommended consumer implementation for an abstract generated controller:
 ```java
 package com.example.service.controllers;
 
-import com.example.service_gen.controllers.CustomerController;
+import com.example.service.controllers.CustomerController;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -155,7 +155,7 @@ public class CustomerApplicationController extends CustomerController {
 
 Rules for controller customization:
 
-- keep custom concrete controllers outside `_gen`;
+- keep custom concrete Java controllers in `src/main/java`, with distinct class names from generated controllers;
 - do not redeclare the same class-level or method-level mappings unless the URL contract is intentionally being replaced;
 - do not create a second concrete controller over the same generated routes while the default generated controller remains active, because Spring can report ambiguous mappings;
 - controller overrides should handle HTTP concerns and delegate business/persistence work to the service;
@@ -240,7 +240,7 @@ Before making non-trivial changes, inspect:
 - `README.md`: user-facing instructions.
 - `CHANGELOG.md`: current release notes and future improvements.
 - Relevant generator package:
-  - Java: `src/main/java/com/gonthera/cli/service/java`
+  - Java: `src/main/java/br/com/smartverse/gonthera/cli/service/java`
   - .NET: `src/main/java/com/gonthera/cli/service/dotNet`
   - Node: `src/main/java/com/gonthera/cli/service/node`
   - Shared: `src/main/java/com/gonthera/cli/service/common`
