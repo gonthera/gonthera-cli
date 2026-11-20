@@ -196,7 +196,7 @@ Content-Type: application/json
               { title: 'JPA maduro', text: 'Relacionamentos bidirecionais, autorrelações, filtros e projeções.' },
               { title: 'Segurança integrada', text: 'JWT, permissões, endpoints anônimos e contexto de tenant.' }
             ],
-            installTitle: 'Configure o plugin Maven', installText: 'A 2.2.0 está em desenvolvimento; instale-a localmente ou aguarde sua publicação no Central. Declare a execução abaixo para gerar Java em target antes de compilar, sem o sufixo _gen nos pacotes. Atualize os imports ao migrar. A versão publicada 2.1.4 mantém a saída antiga.', installLang: 'xml',
+            installTitle: 'Configure o plugin Maven', installText: 'A 2.2.0 está em desenvolvimento; instale-a localmente ou aguarde sua publicação no Central. O bloco executions abaixo é necessário: apenas declarar o plugin não gera código no build. Ele gera Java em target antes de compilar, sem o sufixo _gen nos pacotes. Atualize os imports ao migrar. A versão publicada 2.1.4 mantém a saída antiga.', installLang: 'xml',
             install: `<build>
   <plugins>
     <plugin>
@@ -205,6 +205,8 @@ Content-Type: application/json
       <version>2.2.0</version>
       <executions>
         <execution>
+          <id>generate-gonthera-sources</id>
+          <phase>generate-sources</phase>
           <goals><goal>generate-sources</goal></goals>
         </execution>
       </executions>

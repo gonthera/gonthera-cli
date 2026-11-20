@@ -79,7 +79,7 @@ O legado `properties.json` permanece como último fallback. A prioridade é `.go
 
 A versão publicada no Maven Central é `br.com.smartverse:gonthera-cli:2.1.4`.
 A versão `2.2.0`, em desenvolvimento, passa a gerar os fontes Java em `target/generated-sources/gonthera`; o exemplo abaixo usa essa versão e exige sua publicação ou instalação local com `mvn install`.
-Para usar, basta adicionar o plugin ao `pom.xml` do serviço consumidor. Não é necessário configurar `repositories`, `pluginRepositories` ou credenciais para baixar o plugin.
+Para gerar e compilar no mesmo build, adicione o plugin ao `pom.xml` do serviço consumidor **com o bloco `executions` abaixo**. Apenas declarar o plugin não executa a geração em `mvn compile` ou `mvn package`. Não é necessário configurar `repositories`, `pluginRepositories` ou credenciais para baixar o plugin.
 
 Se estiver migrando de uma versão do MyMavenRepo, troque o `groupId` para `br.com.smartverse` e remova os blocos de repositório e as credenciais usados exclusivamente pelo Gonthera CLI.
 
@@ -92,6 +92,8 @@ Se estiver migrando de uma versão do MyMavenRepo, troque o `groupId` para `br.c
       <version>2.2.0</version>
       <executions>
         <execution>
+          <id>generate-gonthera-sources</id>
+          <phase>generate-sources</phase>
           <goals>
             <goal>generate-sources</goal>
           </goals>
@@ -114,7 +116,7 @@ A geração isolada continua disponível:
 mvn gonthera-cli:generate-sources
 ```
 
-O registro da pasta vale para a execução atual do Maven. Para compilar em uma execução posterior, mantenha o goal configurado em `executions`, conforme o exemplo. Na IDE, recarregue o projeto Maven e execute `mvn generate-sources` para criar os arquivos.
+O registro da pasta vale para a execução atual do Maven. Para compilar em uma execução posterior, mantenha o goal configurado em `executions`, conforme o exemplo. No IntelliJ, recarregue o projeto Maven e use **Generate Sources and Update Folders** no painel Maven. A pasta `target/generated-sources/gonthera` é a raiz dos fontes; o pacote começa abaixo dela, por exemplo `com/example/service`, e não inclui `gonthera`.
 
 Com o JAR standalone 2.2.0, o Java também é gerado em `target/generated-sources/gonthera`. Para integrar a geração e a compilação no Maven, use o plugin com a execução acima.
 

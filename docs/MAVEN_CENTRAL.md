@@ -108,8 +108,23 @@ O Maven Central é o repositório padrão do Maven. Adicione este plugin dentro 
   <groupId>br.com.smartverse</groupId>
   <artifactId>gonthera-cli</artifactId>
   <version>2.1.4</version>
+  <executions>
+    <execution>
+      <id>generate-gonthera-sources</id>
+      <phase>generate-sources</phase>
+      <goals>
+        <goal>generate-sources</goal>
+      </goals>
+    </execution>
+  </executions>
 </plugin>
 ```
+
+O bloco `executions` é necessário para integrar a geração ao build: apenas declarar
+o plugin não faz o goal rodar em `mvn clean compile`. Na 2.2.0, a geração também
+registra `target/generated-sources/gonthera` como raiz dos fontes Java nessa mesma
+execução do Maven. A versão 2.1.4 do exemplo usa a saída antiga; ao adotar a 2.2.0,
+atualize a versão e siga a migração descrita no README.
 
 Não é necessário configurar `repositories`, `pluginRepositories` ou credenciais
 para baixar o plugin. Se estiver migrando do MyMavenRepo, troque o `groupId`

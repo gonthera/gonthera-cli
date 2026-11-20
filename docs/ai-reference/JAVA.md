@@ -67,8 +67,11 @@ java -jar gonthera-cli-2.1.4.jar
 ```
 
 O goal tem fase padrão `generate-sources`. O consumidor deve declarar uma
-`execution` com esse goal no POM para gerar e registrar os fontes antes de compilar
-em cada build. O registro da raiz gerada só vale na sessão atual do Maven.
+`execution` com `<phase>generate-sources</phase>` e esse goal no POM para gerar e registrar os fontes antes de compilar
+em cada build. Declarar o plugin sem `executions` não aciona a geração no lifecycle.
+O registro da raiz gerada só vale na sessão atual do Maven.
+`target/generated-sources/gonthera` é a raiz dos fontes, não parte do pacote.
+No IntelliJ, use **Generate Sources and Update Folders** após atualizar o POM.
 
 ## Configuração modular
 

@@ -58,6 +58,15 @@ O plugin está disponível no Maven Central como `br.com.smartverse:gonthera-cli
       <groupId>br.com.smartverse</groupId>
       <artifactId>gonthera-cli</artifactId>
       <version>2.1.4</version>
+      <executions>
+        <execution>
+          <id>generate-gonthera-sources</id>
+          <phase>generate-sources</phase>
+          <goals>
+            <goal>generate-sources</goal>
+          </goals>
+        </execution>
+      </executions>
     </plugin>
   </plugins>
 </build>
@@ -69,7 +78,7 @@ Execute na mesma pasta do `project.json`:
 mvn gonthera-cli:generate-sources
 ```
 
-O plugin não está associado automaticamente a uma fase do lifecycle. Se a geração precisar ocorrer em todo build, declare uma `execution` com o goal `generate-sources` e uma fase apropriada no serviço consumidor.
+A declaração do plugin sozinha não executa a geração durante o build. Configure `executions` com a fase e o goal `generate-sources`, como no exemplo, para que `mvn clean compile` regenere antes de compilar. Na 2.2.0, essa execução também registra `target/generated-sources/gonthera` como raiz dos fontes; `gonthera` não faz parte do pacote Java. O registro vale apenas para a sessão atual do Maven. No IntelliJ, use **Generate Sources and Update Folders** no painel Maven após atualizar o POM.
 
 Também existe execução como JAR (`Main`), com o mesmo diretório de trabalho e o mesmo arquivo de configuração.
 
