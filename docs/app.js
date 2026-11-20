@@ -28,8 +28,8 @@
     components: { CodeBlock },
     data() {
       return {
-        documentationVersion: '2.1.4',
-        currentVersion: '2.1.4',
+        documentationVersion: '2.2.0',
+        currentVersion: '2.2.0',
         selectedLanguage: 'java',
         activeSection: 'inicio',
         mobileNavOpen: false,
@@ -60,7 +60,7 @@
             { id: 'estrutura', label: 'Aplicação e arquivos' }
           ]},
           { label: 'Obter', items: [
-            { id: 'downloads', label: 'Downloads', badge: '2.1.4' }
+            { id: 'downloads', label: 'Downloads', badge: '2.2.0' }
           ]}
         ],
         projectProperties: [
@@ -196,7 +196,7 @@ Content-Type: application/json
               { title: 'JPA maduro', text: 'Relacionamentos bidirecionais, autorrelações, filtros e projeções.' },
               { title: 'Segurança integrada', text: 'JWT, permissões, endpoints anônimos e contexto de tenant.' }
             ],
-            installTitle: 'Configure o plugin Maven', installText: 'A 2.2.0 está em desenvolvimento; instale-a localmente ou aguarde sua publicação no Central. O bloco executions abaixo é necessário: apenas declarar o plugin não gera código no build. Ele gera Java em target antes de compilar, sem o sufixo _gen nos pacotes. Atualize os imports ao migrar. A versão publicada 2.1.4 mantém a saída antiga.', installLang: 'xml',
+            installTitle: 'Configure o plugin Maven', installText: 'Use a versão 2.2.0. O bloco executions abaixo é necessário: apenas declarar o plugin não gera código no build. Ele gera Java em target antes de compilar, sem o sufixo _gen nos pacotes. Atualize os imports ao migrar.', installLang: 'xml',
             install: `<build>
   <plugins>
     <plugin>
@@ -360,8 +360,8 @@ SECRET_JWT: \${SECRET_JWT}`,
             installTitle: 'Execute o JAR pelo npm', installText: 'Coloque o JAR em um caminho estável e registre os scripts no package.json.', installLang: 'json',
             install: `{
   "scripts": {
-    "gonthera-cli": "java -jar ./tools/gonthera-cli-2.1.4.jar",
-    "gonthera-validate": "java -jar ./tools/gonthera-cli-2.1.4.jar --validate",
+    "gonthera-cli": "java -jar ./tools/gonthera-cli-2.2.0.jar",
+    "gonthera-validate": "java -jar ./tools/gonthera-cli-2.2.0.jar --validate",
     "prisma:validate": "prisma validate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -560,7 +560,7 @@ RABBITMQ_EXCHANGE=customer.events`,
           dotnet: {
             id: 'dotnet', name: '.NET', icon: '.N', stack: 'ASP.NET Core + Entity Framework Core',
             hero: 'Gere uma API C# organizada com controllers, DTOs e persistência Entity Framework.',
-            command: 'java -jar gonthera-cli-2.1.4.jar',
+            command: 'java -jar gonthera-cli-2.2.0.jar',
             highlights: [
               { title: 'Saída C# organizada', text: 'Entidades, DTOs, converters, repositories e controllers.' },
               { title: 'Controllers extensíveis', text: 'Actions virtuais e controllers abstratos opcionais.' },
@@ -571,8 +571,8 @@ RABBITMQ_EXCHANGE=customer.events`,
 .\\gonthera-cli.exe
 
 # Alternativa multiplataforma
-java -jar gonthera-cli-2.1.4.jar --validate
-java -jar gonthera-cli-2.1.4.jar`,
+java -jar gonthera-cli-2.2.0.jar --validate
+java -jar gonthera-cli-2.2.0.jar`,
             commands: `.\\gonthera-cli.exe --validate
 .\\gonthera-cli.exe
 dotnet restore
@@ -678,8 +678,8 @@ app.Run();`,
           }
         },
         downloads: [
-          { platform: 'Windows', name: 'gonthera-cli.exe', icon: '⊞', size: '2,7 MB', href: './downloads/2.1.4/gonthera-cli.exe', sha: '4f7b53025bcc73f9b729fc1b1e74d88e59bba30e8e4a9c0d2c10edce2ec60e28' },
-          { platform: 'Multiplataforma', name: 'gonthera-cli-2.1.4.jar', icon: 'J', size: '2,6 MB', href: './downloads/2.1.4/gonthera-cli-2.1.4.jar', sha: '605ea85ad7f07e553e1d81b32285e415341c3686b0d55626d0ea705331aa2c7f' }
+          { platform: 'Windows', name: 'gonthera-cli.exe', icon: '⊞', size: '2,7 MB', href: './downloads/2.2.0/gonthera-cli.exe', sha: 'eee6afa17eb4da9e0889da78383b493c46da02243aa47bab43d96b5ad1e7adfe' },
+          { platform: 'Multiplataforma', name: 'gonthera-cli-2.2.0.jar', icon: 'J', size: '2,6 MB', href: './downloads/2.2.0/gonthera-cli-2.2.0.jar', sha: '86c729ca5062f0f67af7115a00af47ba04a643752610f5681e053416fea6b4c8' }
         ]
       };
     },

@@ -1,6 +1,7 @@
-## >2.2.0 - Em desenvolvimento
+## >2.2.0 - 20-11-2026
 
 ### Geração Java integrada ao build Maven
+* Portal atualizado para a 2.2.0, com downloads do JAR e executável Windows e checksums SHA-256 dos artefatos do release.
 * Exemplos de consumo incluem explicitamente `executions`, fase e goal `generate-sources`; documentado que declarar o plugin sozinho não ativa a geração no build, como reconhecer a raiz dos fontes e atualizar as pastas no IntelliJ.
 * Fontes Java passam de `src/main/java/<mainPackage>_gen` para `target/generated-sources/gonthera/<mainPackage>`, respeitando `build/directory` no Maven.
 * O goal `generate-sources` usa a fase padrão `generate-sources` e registra a pasta gerada na compilação do projeto consumidor. Declare uma execução do goal no POM para regenerar automaticamente em builds após `clean`.

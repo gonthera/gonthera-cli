@@ -12,8 +12,11 @@ chave GPG descritas abaixo são necessárias apenas para publicar novas versões
 
 ## Preparar a máquina para publicação
 
-Use Maven 3.8+ e JDK 11 ou superior. A compilação principal mantém o alvo
-Java 11; as aplicações Spring geradas têm seus próprios requisitos de Java.
+Use Maven 3.8+ e JDK 17 para publicar esta versão. Confira o Java usado pelo
+Maven com `mvn -version`; se necessário, ajuste `JAVA_HOME` para o JDK 17 antes
+do build. A compilação principal mantém o alvo Java 11; as aplicações Spring
+geradas têm seus próprios requisitos de Java. JDKs mais novos podem não ser
+compatíveis com a versão do Lombok usada pelo gerador.
 
 No Central Portal, confira se o namespace está verificado e gere um **User Token**
 na conta. Use o usuário e a senha gerados pelo token, não a senha do login.
@@ -86,7 +89,10 @@ Quando estiver pronto, envie ao Portal:
 mvn -Prelease clean deploy -Dgpg.keyname=SEU_FINGERPRINT
 ```
 
-O GPG solicitará a senha da chave. O Maven enviará o bundle e aguardará a validação.
+O GPG solicitará a senha da chave. Execute sem `-B`/`--batch-mode` quando precisar
+do diálogo de senha: o modo batch impede o GPG de abrir o pinentry e pode causar
+`gpg: signing failed: No pinentry`. Em CI, configure a assinatura não interativa
+separadamente. O Maven enviará o bundle e aguardará a validação.
 Com `autoPublish=false`, finalize em
 [Publishing Deployments](https://central.sonatype.com/publishing/deployments):
 confira os arquivos e clique em **Publish** depois de o deployment ser validado.
