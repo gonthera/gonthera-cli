@@ -28,8 +28,8 @@
     components: { CodeBlock },
     data() {
       return {
-        documentationVersion: '2.2.0',
-        currentVersion: '2.2.0',
+        documentationVersion: '2.2.2',
+        currentVersion: '2.2.2',
         selectedLanguage: 'java',
         activeSection: 'inicio',
         mobileNavOpen: false,
@@ -60,7 +60,7 @@
             { id: 'estrutura', label: 'Aplicação e arquivos' }
           ]},
           { label: 'Obter', items: [
-            { id: 'downloads', label: 'Downloads', badge: '2.2.0' }
+            { id: 'downloads', label: 'Downloads', badge: '2.2.2' }
           ]}
         ],
         projectProperties: [
@@ -196,13 +196,13 @@ Content-Type: application/json
               { title: 'JPA maduro', text: 'Relacionamentos bidirecionais, autorrelações, filtros e projeções.' },
               { title: 'Segurança integrada', text: 'JWT, permissões, endpoints anônimos e contexto de tenant.' }
             ],
-            installTitle: 'Configure o plugin Maven', installText: 'Use a versão 2.2.0. O bloco executions abaixo é necessário: apenas declarar o plugin não gera código no build. Ele gera Java em target antes de compilar, sem o sufixo _gen nos pacotes. Atualize os imports ao migrar.', installLang: 'xml',
+            installTitle: 'Configure o plugin Maven', installText: 'Use a versão 2.2.2. O bloco executions abaixo é necessário: apenas declarar o plugin não gera código no build. Ele gera Java em target antes de compilar, sem o sufixo _gen nos pacotes. Atualize os imports ao migrar.', installLang: 'xml',
             install: `<build>
   <plugins>
     <plugin>
       <groupId>br.com.smartverse</groupId>
       <artifactId>gonthera-cli</artifactId>
-      <version>2.2.0</version>
+      <version>2.2.2</version>
       <executions>
         <execution>
           <id>generate-gonthera-sources</id>
@@ -219,8 +219,8 @@ mvn clean compile
 mvn generate-sources
 
 # Alternativa com o JAR
-java -jar gonthera-cli-2.2.0.jar --validate
-java -jar gonthera-cli-2.2.0.jar`,
+java -jar gonthera-cli-2.2.2.jar --validate
+java -jar gonthera-cli-2.2.2.jar`,
             project: `{
   "mainPackage": "com.example.customer",
   "projectName": "customer-service",
@@ -360,8 +360,8 @@ SECRET_JWT: \${SECRET_JWT}`,
             installTitle: 'Execute o JAR pelo npm', installText: 'Coloque o JAR em um caminho estável e registre os scripts no package.json.', installLang: 'json',
             install: `{
   "scripts": {
-    "gonthera-cli": "java -jar ./tools/gonthera-cli-2.2.0.jar",
-    "gonthera-validate": "java -jar ./tools/gonthera-cli-2.2.0.jar --validate",
+    "gonthera-cli": "java -jar ./tools/gonthera-cli-2.2.2.jar",
+    "gonthera-validate": "java -jar ./tools/gonthera-cli-2.2.2.jar --validate",
     "prisma:validate": "prisma validate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -560,24 +560,23 @@ RABBITMQ_EXCHANGE=customer.events`,
           dotnet: {
             id: 'dotnet', name: '.NET', icon: '.N', stack: 'ASP.NET Core + Entity Framework Core',
             hero: 'Gere uma API C# organizada com controllers, DTOs e persistência Entity Framework.',
-            command: 'java -jar gonthera-cli-2.2.0.jar',
+            command: 'java -jar gonthera-cli-2.2.2.jar',
             highlights: [
               { title: 'Saída C# organizada', text: 'Entidades, DTOs, converters, repositories e controllers.' },
               { title: 'Controllers extensíveis', text: 'Actions virtuais e controllers abstratos opcionais.' },
               { title: 'Integrações opcionais', text: 'Entity Framework Core e RabbitMQ com registro em DI.' }
             ],
-            installTitle: 'Execute o Gonthera na raiz', installText: 'Use o executável Windows ou o JAR multiplataforma ao lado da pasta .gonthera.', installLang: 'powershell',
+            installTitle: 'Execute o Gonthera na raiz', installText: 'Use a versão 2.2.2 com .NET 10. Execute o JAR na raiz dos contratos .gonthera. Somente Generated é descartável; o código manual é preservado.', installLang: 'powershell',
             install: `.\\gonthera-cli.exe --validate
 .\\gonthera-cli.exe
 
 # Alternativa multiplataforma
-java -jar gonthera-cli-2.2.0.jar --validate
-java -jar gonthera-cli-2.2.0.jar`,
+java -jar gonthera-cli-2.2.2.jar --validate
+java -jar gonthera-cli-2.2.2.jar`,
             commands: `.\\gonthera-cli.exe --validate
 .\\gonthera-cli.exe
-dotnet restore
-dotnet build
-dotnet run`,
+dotnet build CustomerService.slnx
+dotnet run --project CustomerService.Api`,
             project: `{
   "mainPackage": "CustomerService",
   "projectName": "CustomerService",
@@ -595,17 +594,19 @@ public class CustomerEntity
 
     public virtual ProfileEntity? Profile { get; set; }
 }`,
-            output: `CustomerService_gen/
-├── Common/
-├── Controllers/
-├── Converters/
-├── Data/
-├── Dtos/
-├── Endpoints/
-├── Entities/
-├── Enums/
-├── Messaging/
-└── Repositories/`,
+            output: `CustomerService.slnx
+CustomerService.Domain/
+├── Generated/Entities/
+└── Entities/*.Custom.cs
+CustomerService.Application/
+├── Generated/Services/*ServiceBase.cs
+└── Services/*Service.cs
+CustomerService.Infrastructure/
+├── Generated/Repositories/*RepositoryBase.cs
+└── Repositories/*Repository.cs
+CustomerService.Api/
+├── Generated/Controllers/*ControllerBase.cs
+└── Controllers/*Controller.cs`,
             relationLang: 'csharp', relationTitle: 'Navegações do Entity Framework',
             relationCode: `public virtual CustomerEntity Customer { get; set; }
 public Guid CustomerId { get; set; }
@@ -614,20 +615,18 @@ public Guid CustomerId { get; set; }
 public virtual ProfileEntity? Profile { get; set; }`,
             relationNotes: ['O contrato define proprietário, inverso, mappedBy e coleções.', 'O DbContext gerado registra as entidades.', 'Revise namespaces e infraestrutura específica da aplicação consumidora.'],
             crudLang: 'csharp', crudTitle: 'Controller ASP.NET gerado',
-            crudCode: `[ApiController]
-[Route("customer")]
-public class CustomerController : ControllerBase
+            crudCode: `namespace CustomerService.Application.Services;
+public class CustomerService : CustomerServiceBase
 {
-    [HttpGet]
-    public virtual ActionResult<ResponseData> GetAll([FromQuery] RequestData input)
-        => Ok(_customerRepository.GetAll(input));
+    public CustomerService(ICustomerRepository repository) : base(repository) { }
 
-    [HttpPost]
-    public virtual ActionResult<CustomerDTO> Save([FromBody] CustomerDTO input)
-        => Ok(CustomerDTOConverter.ToDTO(
-            _customerRepository.Add(CustomerDTOConverter.ToEntity(input))));
+    public override CustomerDTO Save(CustomerDTO input)
+    {
+        // Personalize aqui; este arquivo é preservado.
+        return base.Save(input);
+    }
 }`,
-            crudNotes: ['Actions CRUD são virtuais.', 'controllerAbstract permite fornecer uma implementação externa.', 'DTOConverter separa o contrato HTTP da entidade persistida.', 'A camada Service separada ainda é exclusiva do Java.'],
+            crudNotes: ['Controllers delegam para services de aplicação.', 'Bases abstratas ficam em Generated; implementações manuais são preservadas.', 'Entidades e DTOs são partial.', 'A DI registra services e repositories concretos customizados.'],
             endpointLang: 'csharp', endpointTitle: 'Action ASP.NET gerada',
             endpointCode: `[HttpGet("customer/summary")]
 public virtual ActionResult<CustomerSummaryOutput> Summary()
@@ -645,7 +644,7 @@ public virtual ActionResult<CustomerSummaryOutput> Summary()
 public class AppRabbitConfig : RabbitConfig { }
 
 // No bootstrap da aplicação
-services.AddRabbitMessaging(configuration);`,
+AddRabbitMessaging.AddRabbitMessagingGenerate(builder.Services);`,
             messagingNotes: ['Publishers e subscribers são gerados quando há canais.', 'A exchange é definida pelo atributo RabbitExchange.', 'A aplicação consumidora registra a integração no container de DI.'],
             securityTitle: 'Segurança integrada ainda é parcial', securityText: 'O alvo .NET não gera o mesmo conjunto próprio de JWT, tenant e permissões do alvo Java.', securityLang: 'csharp',
             securityCode: `builder.Services.AddAuthentication();
@@ -655,9 +654,10 @@ app.UseAuthentication();
 app.UseAuthorization();`,
             securityNotes: ['Use a infraestrutura ASP.NET Core do serviço consumidor.', 'Endpoints anônimos gerados podem usar AllowAnonymous.', 'Mantenha políticas e handlers fora do diretório regenerado.'],
             runtimeTitle: 'Registre o contexto e os repositories', runtimeText: 'A aplicação consumidora fornece connection string, migrations e composição do runtime.', runtimeLang: 'csharp',
-            runtimeCode: `builder.Services.AddDbContext<CustomDbContext>(options =>
+            runtimeCode: `builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+builder.Services.AddGeneratedInfrastructure();
 builder.Services.AddControllers();
 var app = builder.Build();
 app.MapControllers();
@@ -673,13 +673,13 @@ app.Run();`,
   }
 }`,
             generatedFiles: ['Entidades, DTOs e converters', 'Repositories e controllers', 'CustomDbContext e auxiliares de DI', 'Endpoints e RabbitMQ opcionais'],
-            manualFiles: ['Projeto .csproj e pacotes NuGet', 'Connection string e migrations', 'Bootstrap ASP.NET Core', 'Autenticação e regras do domínio'],
-            caveat: 'Os diretórios organizam fisicamente a saída, mas vários templates ainda usam o namespace raiz compartilhado e referências específicas da infraestrutura consumidora.'
+            manualFiles: ['Scaffolds .csproj e Program.cs são criados uma vez', 'Connection string e migrations', 'Overrides de service, repository e controller', 'Partials de entidades e DTOs, autenticação e regras de domínio'],
+            caveat: 'Somente Generated é descartável. Arquivos manuais são criados apenas se ausentes. A migração exige namespaces por camada; consulte docs/DOTNET.md.'
           }
         },
         downloads: [
-          { platform: 'Windows', name: 'gonthera-cli.exe', icon: '⊞', size: '2,7 MB', href: './downloads/2.2.0/gonthera-cli.exe', sha: 'eee6afa17eb4da9e0889da78383b493c46da02243aa47bab43d96b5ad1e7adfe' },
-          { platform: 'Multiplataforma', name: 'gonthera-cli-2.2.0.jar', icon: 'J', size: '2,6 MB', href: './downloads/2.2.0/gonthera-cli-2.2.0.jar', sha: '86c729ca5062f0f67af7115a00af47ba04a643752610f5681e053416fea6b4c8' }
+          { platform: 'Windows', name: 'gonthera-cli.exe', icon: '⊞', size: '0,57 MiB', href: './downloads/2.2.2/gonthera-cli.exe', sha: 'b390d774378e1c39a687c27265f5af18d53905254c7044960cb59ca1ba8379c6' },
+          { platform: 'Multiplataforma', name: 'gonthera-cli-2.2.2.jar', icon: 'J', size: '0,51 MiB', href: './downloads/2.2.2/gonthera-cli-2.2.2.jar', sha: 'c690c7717190b3464a035975b8205992b648c4d267c866ecee8f26ca0648ad7f' }
         ]
       };
     },

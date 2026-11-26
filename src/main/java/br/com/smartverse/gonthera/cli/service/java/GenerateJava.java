@@ -4,8 +4,6 @@ import com.google.gson.Gson;
 import br.com.smartverse.gonthera.cli.model.Properties;
 import br.com.smartverse.gonthera.cli.service.common.Common;
 import br.com.smartverse.gonthera.cli.service.common.GenerateCommon;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -27,7 +25,6 @@ import static br.com.smartverse.gonthera.cli.service.java.GenerateService.genera
 
 public class GenerateJava {
 
-    public static Logger logger = LogManager.getLogger(GenerateJava.class);
 
     public static void generateSource(Properties prop) {
         Path projectDirectory = Paths.get(loadPath());

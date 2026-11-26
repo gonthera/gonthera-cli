@@ -1,0 +1,15 @@
+using Microsoft.AspNetCore.Mvc;
+namespace <<namespace>>;
+[ApiController]
+[Route("<<route>>")]
+public abstract class <<entity>>ControllerBase : ControllerBase
+{
+    protected readonly <<entity>>Service Service;
+    protected <<entity>>ControllerBase(<<entity>>Service service) { Service = service; }
+    [HttpGet] public virtual ActionResult<ResponseData> GetAll([FromQuery] RequestData input) => Ok(Service.GetAll(input));
+    [HttpGet("{id}")] public virtual ActionResult<<<entity>>DTO> Get(<<key>> id, string displayFields = "") => Ok(Service.Get(id, displayFields));
+    [HttpPost] public virtual ActionResult<<<entity>>DTO> Save([FromBody] <<entity>>DTO input) => Ok(Service.Save(input));
+    [HttpPut("{id}")] public virtual ActionResult<<<entity>>DTO> Update(<<key>> id, [FromBody] <<entity>>DTO input) => Ok(Service.Update(id,input));
+    [HttpDelete("{id}")] public virtual IActionResult Delete(<<key>> id) { Service.Delete(id); return Ok(new { message = "deleted", id }); }
+    [HttpPost("import")] public virtual IActionResult Import([FromBody] List<<<entity>>DTO> input) { input.ForEach(item => Service.Save(item)); return Ok($"Imported {input.Count} registrys"); }
+}

@@ -1,5 +1,7 @@
 # Gonthera CLI
 
+A correção de segurança **2.2.2** remove dependências sem uso de Log4j, Spring e JPA do gerador. Consulte [o relatório e o alcance da correção](docs/SECURITY_2.2.2.md).
+
 Ferramenta para geração de backends Java, .NET e Node, incluindo entidades, DTOs, repositories, endpoints, contratos, PostgreSQL, MongoDB no alvo Node e abstrações RabbitMQ para publish/subscribe.
 
 [UI Criação entidades](https://develop.smartverse.com.br/entity/)
@@ -77,8 +79,8 @@ O legado `properties.json` permanece como último fallback. A prioridade é `.go
 - `messaging`: provedores de mensageria; atualmente, `RabbitMq`.
 - `authorization`: customização das classes Java `Authenticate` e `TenantConfiguration`.
 
-A versão publicada no Maven Central é `br.com.smartverse:gonthera-cli:2.1.4`.
-A versão `2.2.0`, em desenvolvimento, passa a gerar os fontes Java em `target/generated-sources/gonthera`; o exemplo abaixo usa essa versão e exige sua publicação ou instalação local com `mvn install`.
+A versão atual é `br.com.smartverse:gonthera-cli:2.2.2`.
+Desde a versão 2.2.0, os fontes Java são gerados em `target/generated-sources/gonthera`. A 2.2.2 também inclui a geração .NET 10 em camadas e a remoção das dependências sem uso de Spring/JPA e Log4j.
 Para gerar e compilar no mesmo build, adicione o plugin ao `pom.xml` do serviço consumidor **com o bloco `executions` abaixo**. Apenas declarar o plugin não executa a geração em `mvn compile` ou `mvn package`. Não é necessário configurar `repositories`, `pluginRepositories` ou credenciais para baixar o plugin.
 
 Se estiver migrando de uma versão do MyMavenRepo, troque o `groupId` para `br.com.smartverse` e remova os blocos de repositório e as credenciais usados exclusivamente pelo Gonthera CLI.
@@ -89,7 +91,7 @@ Se estiver migrando de uma versão do MyMavenRepo, troque o `groupId` para `br.c
     <plugin>
       <groupId>br.com.smartverse</groupId>
       <artifactId>gonthera-cli</artifactId>
-      <version>2.2.0</version>
+      <version>2.2.2</version>
       <executions>
         <execution>
           <id>generate-gonthera-sources</id>
@@ -134,7 +136,7 @@ Com o executável ou JAR:
 
 ```bash
 gonthera-cli.exe --validate
-java -jar gonthera-cli-2.1.4.jar --validate
+java -jar gonthera-cli-2.2.2.jar --validate
 ```
 
 A validação isolada exige a pasta `.gonthera`, verifica a sintaxe e os tipos estruturais dos arquivos JSON, valida os campos obrigatórios e rejeita propriedades desconhecidas em qualquer nível. As coleções `entities`, `endpoints` e `enums` devem ser arrays; `messaging` deve ser objeto. A geração continua temporariamente compatível com `project.json` e `properties.json` na raiz e aplica as mesmas validações antes de alterar qualquer saída.
@@ -226,47 +228,19 @@ public class AppCustomerService extends CustomerService {
 }
 ```
 
-#### Controllers .NET
+#### Projetos .NET 10 em camadas (incluídos na 2.2.2)
 
-A saída .NET também usa a nomenclatura Controller. O par legado `*Handler`/`*HandlerImpl` não é mais gerado. Para cada entidade com `generateDefaultControllers: true`, a CLI cria um único `Controllers/*Controller.cs` com os métodos CRUD `virtual`.
+A saída .NET passa a usar .NET 10 e os projetos `<mainPackage>.Domain`, `.Application`,
+`.Infrastructure` e `.Api`, com uma solução `.slnx`. Controllers chamam services de
+aplicação, e a infraestrutura implementa os contratos de repository.
 
-- `controllerAbstract: false`: gera um Controller concreto pronto para descoberta pelo ASP.NET Core;
-- `controllerAbstract: true`: gera um Controller abstrato com a implementação CRUD padrão; o consumidor deve criar uma classe concreta fora de `_gen` e pode herdar ou sobrescrever métodos seletivamente;
-- `generateDefaultControllers: false`: não gera Controller para a entidade;
-- `serviceAbstract` continua específico do Java; o CRUD .NET ainda acessa o repository diretamente pelo Controller.
+As pastas `Generated` são descartáveis e recebem o código gerado. Entidades e DTOs
+são `partial`; services, repositories e controllers têm bases abstratas geradas e
+classes customizadas criadas apenas quando ausentes. A regeneração preserva as
+customizações, os `.csproj` e o `Program.cs`. Os namespaces não incluem `_Gen`.
 
-A saída fica organizada em:
+Veja [o guia .NET 10](docs/DOTNET.md) para estrutura, customização, DI, build e migração.
 
-```text
-<mainPackage>_gen/
-├── Common/
-├── Controllers/
-├── Converters/
-├── Data/
-├── Dtos/
-├── Endpoints/
-├── Entities/
-├── Enums/
-├── Messaging/
-└── Repositories/
-```
-
-Exemplo de customização:
-
-```csharp
-public class CustomerApplicationController : CustomerController
-{
-    public CustomerApplicationController(ICustomerRepository repository) : base(repository)
-    {
-    }
-
-    public override ActionResult<CustomerDTO> Save(CustomerDTO input)
-    {
-        // Validação específica do consumidor.
-        return base.Save(input);
-    }
-}
-```
 * entityFields: Objeto que contém os campos da entidade
   * comment: Comentario do campo, este item é obrigatório
   * fieldName: Nome do campo
@@ -693,7 +667,7 @@ Arquivos de subscriber:
 Quando `messaging.RabbitMq` é configurado em projeto .NET, o gerador cria arquivos dentro de:
 
 ```text
-<mainPackage com pontos convertidos em barras>_gen/Messaging/
+<mainPackage>.Infrastructure/Generated/Messaging/
 ```
 
 Arquivos comuns:
@@ -734,12 +708,12 @@ Essa decisão evita deixar a exchange fixa no código gerado e permite que cada 
 
 #### Configuração da exchange .NET
 
-No .NET, a exchange também não é definida dentro do `project.json`. O serviço consumidor deve criar uma classe concreta fora do diretório `_gen` e informar a exchange via `RabbitExchange`.
+No .NET, a exchange também não é definida dentro do `project.json`. O serviço consumidor deve criar uma classe concreta fora de `Generated`, na Infrastructure, e informar a exchange via `RabbitExchange`.
 
 Exemplo:
 
 ```csharp
-using ExampleBackend.ExampleBackend_Gen.Messaging;
+using ExampleBackend.Infrastructure.Messaging;
 using Microsoft.Extensions.Configuration;
 
 namespace ExampleBackend.Messaging
@@ -757,11 +731,11 @@ namespace ExampleBackend.Messaging
 Registre a configuração concreta e os publishers gerados no `Program.cs`:
 
 ```csharp
-using ExampleBackend.ExampleBackend_Gen.Messaging;
+using ExampleBackend.Infrastructure.Messaging;
 using ExampleBackend.Messaging;
 
 builder.Services.AddSingleton<RabbitConfig, AppRabbitConfig>();
-AddRabbitMessaging.AddRabbitMessagingGenerate(builder);
+AddRabbitMessaging.AddRabbitMessagingGenerate(builder.Services);
 ```
 
 #### Publicando mensagens em Java
@@ -800,7 +774,7 @@ Com o exemplo acima, o gerador cria `NotificationPub`.
 Uso em uma classe do serviço consumidor:
 
 ```csharp
-using ExampleBackend.ExampleBackend_Gen.Messaging.Pub;
+using ExampleBackend.Infrastructure.Messaging.Pub;
 
 namespace ExampleBackend.Services
 {
@@ -849,13 +823,13 @@ O método gerado com `@RabbitListener` recebe a mensagem como `String`, trata er
 
 #### Ouvindo mensagens em .NET
 
-Subscribers .NET também são gerados como classes abstratas para manter a lógica de negócio fora de `_gen`.
+Subscribers .NET são bases abstratas na Infrastructure; implemente a lógica de negócio fora de `Generated`.
 
 Com o exemplo acima, o gerador cria `NotificationChatSub`. O serviço consumidor deve criar uma implementação concreta:
 
 ```csharp
-using ExampleBackend.ExampleBackend_Gen.Messaging;
-using ExampleBackend.ExampleBackend_Gen.Messaging.Sub;
+using ExampleBackend.Infrastructure.Messaging;
+using ExampleBackend.Infrastructure.Messaging.Sub;
 using Microsoft.Extensions.Logging;
 
 namespace ExampleBackend.Messaging
@@ -941,7 +915,7 @@ Configure a conexão RabbitMQ no `appsettings.json`:
 
 #### Cuidados
 
-* Não edite arquivos gerados. No Java, ficam em `target/generated-sources/gonthera`, e as customizações ficam em `src/main/java`; no .NET, mantenha as customizações fora de `_gen`.
+* Não edite arquivos gerados. No Java, ficam em `target/generated-sources/gonthera`, e as customizações ficam em `src/main/java`; no .NET, mantenha as customizações fora de `Generated`.
 * `routingKey` deve ser informado nos publishers.
 * Em Java, a classe concreta que estende `RabbitConfig` deve ter `@Configuration` e `@RabbitExchange`.
 * Em .NET, a classe concreta que estende `RabbitConfig` deve ter `[RabbitExchange("...")]` e ser registrada no DI como `RabbitConfig`.
@@ -1308,3 +1282,10 @@ O gerador não cria `package.json` ou `tsconfig.json`. Esses arquivos continuam 
 | byte      | byte(apenas java)                   |
 | byte[]    | InputStream(apenas Java)            |
 | map       | Map<String, Object>(apenas Java)    |
+
+## Projeto consumidor de teste .NET
+
+O projeto irmão `../dotnet-test-service` exercita a geração com a 2.2.2 e SDK .NET 10.
+Execute `python3 test.py` na pasta dele para regenerar duas vezes, verificar a
+preservação de arquivos manuais e executar testes HTTP de CRUD, filtros e DI com
+SQLite temporário. Veja [a matriz e os limites da validação .NET](docs/DOTNET_TESTING.md).

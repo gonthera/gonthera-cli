@@ -1,5 +1,7 @@
 # Handoff — Gonthera CLI
 
+A 2.2.2 remove Log4j e dependências Spring/JPA de teste sem uso. Templates continuam produzindo Spring/JPA para os consumidores; isso não exige carregá-los na CLI. Detalhes e validação em [SECURITY_2.2.2.md](../../SECURITY_2.2.2.md).
+
 ## Objetivo
 
 `gonthera-cli` é uma ferramenta de geração de backends distribuída como Maven Plugin (`br.com.smartverse:gonthera-cli`) e executável standalone. Ela lê `project.json` no diretório em que o Maven/JAR foi executado, com fallback temporário para `properties.json`, e gera persistência, APIs, contratos, mensageria, scripts PostgreSQL e metadados de permissões para Java, .NET e Node.
@@ -550,45 +552,23 @@ src/main/resources/postgree.sql
 
 O nome `postgree.sql` é o nome efetivamente usado (incluindo a grafia).
 
-### .NET
+### .NET 10 — 2.2.1 em desenvolvimento
 
-O diretório inteiro abaixo é apagado e recriado:
+A geração usa quatro projetos `<mainPackage>.Domain`, `.Application`, `.Infrastructure`
+e `.Api`. Somente `Generated` dentro deles é descartável. Os namespaces seguem a
+camada e a categoria, sem `_Gen`. Solução, `.csproj`, `Program.cs`, partials e classes
+customizadas são scaffolds criados somente quando ausentes. O guia operacional e
+as fronteiras de customização estão em [DOTNET.md](../../DOTNET.md).
 
-```text
-<mainPackage com pontos convertidos em barras>_gen/
-```
-
-A saída principal é organizada desta forma:
-
-```text
-<mainPackage>_gen/
-├── Common/
-├── Controllers/
-├── Converters/
-├── Data/
-├── Dtos/
-├── Endpoints/
-├── Entities/
-├── Enums/
-├── Messaging/
-└── Repositories/
-```
-
-Os arquivos permanecem atualmente no namespace C# raiz `<mainPackage>.<mainPackage>_Gen`; a separação desta versão é física, por diretórios. O diretório inteiro é removido recursivamente antes da regeneração.
-
-O par legado `*Handler`/`*HandlerImpl` deixou de ser gerado. Com `generateDefaultControllers: true`, cada entidade gera um único `Controllers/*Controller.cs`, contendo a implementação CRUD e métodos `virtual`. `controllerAbstract: false` gera classe concreta; `controllerAbstract: true` gera classe abstrata para implementação e sobrescrita fora de `_gen`. Com `generateDefaultControllers: false`, nenhum controller CRUD é criado.
-
-Nesta etapa não foi introduzida uma camada Service no .NET: o Controller ainda injeta `I*Repository` e executa conversão e persistência diretamente. `serviceAbstract` permanece exclusivo do Java até que o registro explícito de DI do .NET seja redesenhado.
-
-Também são gerados primitives de endpoint, `CustomDbContext`, registro de DI e classes auxiliares. A pasta `static/` não é criada automaticamente; nela são sobrescritos `properties.json`, `resources.json` e `postgree.sql`.
-
-Quando `messaging.RabbitMq` é configurado, também são gerados:
-
-- `Messaging/RabbitExchangeAttribute.cs`;
-- `Messaging/RabbitConfig.cs`;
-- `Messaging/AddRabbitMessaging.cs`;
-- `Messaging/Pub/RabbitPublisher.cs` e `Messaging/Pub/*Pub.cs`;
-- `Messaging/Sub/*Sub.cs`.
+Controllers gerados são bases abstratas que delegam para services da Application.
+Repositories e services também usam bases com métodos virtuais e implementações
+manuais; DI registra as concretas. `CustomDbContext` gerado recebe opções por DI e
+`ApiDbContext` manual permite extensão. Entidades/DTOs são partial. Domain não depende
+de EF ou ASP.NET; Infrastructure inclui EF Core/Npgsql 10 e RabbitMQ 6.8.1 quando usado.
+`onlyDTO` não produz persistência. A pasta `static` é criada automaticamente.
+O pipeline usa `target/gonthera-dotnet-staging` para renderizar os templates e
+`DotNetProjectLayout` para distribuir fontes e scaffolds. O código legado `_gen`
+é preservado; sua remoção e a atualização dos imports fazem parte da migração.
 
 ### Node
 
@@ -882,7 +862,7 @@ Node pressupõe, no mínimo:
 - `dotenv` 16 para a configuração de ambiente;
 - quando `messaging.RabbitMq` for usado: `amqplib` 2 e `amqp-connection-manager` 5.
 
-Os namespaces fixos do template `CustomDbContext` atualmente usam `DataOnBackend.Config.*`, independentemente de `mainPackage`; serviços com outro nome provavelmente precisarão ajustar o arquivo gerado ou o template.
+Desde a 2.2.1, o contexto .NET recebe opções via DI e não referencia `DataOnBackend.Config.*`. Não personalize o contexto gerado: use `ApiDbContext` manual ou o ponto partial de configuração do modelo.
 
 ## SQL e permissões
 

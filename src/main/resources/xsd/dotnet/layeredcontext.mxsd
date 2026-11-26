@@ -1,0 +1,16 @@
+using Microsoft.EntityFrameworkCore;
+namespace <<namespace>>;
+public abstract partial class CustomDbContext : DbContext
+{
+    public string Schema = "public";
+    public static readonly AsyncLocal<string> _asyncThread = new();
+    protected CustomDbContext(DbContextOptions options) : base(options) { }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.HasDefaultSchema(_asyncThread.Value ?? Schema);
+        ConfigureGeneratedModel(modelBuilder);
+    }
+    partial void ConfigureGeneratedModel(ModelBuilder modelBuilder);
+    <<dbSet>>
+}

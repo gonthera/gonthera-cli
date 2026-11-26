@@ -4,8 +4,6 @@ package br.com.smartverse.gonthera.cli.service.common;
 
 import br.com.smartverse.gonthera.cli.enuns.Language;
 import br.com.smartverse.gonthera.cli.model.EntityFields;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,7 +14,6 @@ public class FieldsMapper {
 
     private static Map<String,String> typeFields = new LinkedHashMap<>();
     private static Map<String,String> typeFieldsDatabase = new LinkedHashMap<>();
-    public static Logger logger = LogManager.getLogger(FieldsMapper.class);
 
     public static String getFieldTypeEntity(String type){
         if(typeFields.isEmpty()){

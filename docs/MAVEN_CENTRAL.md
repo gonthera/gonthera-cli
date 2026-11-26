@@ -1,7 +1,7 @@
 # Publicação no Maven Central
 
 O Gonthera CLI está publicado no Maven Central com as coordenadas
-`br.com.smartverse:gonthera-cli:2.1.4` e licença MIT. Novas versões são enviadas
+`br.com.smartverse:gonthera-cli:2.2.2` e licença MIT. Novas versões são enviadas
 pelo Central Publisher Portal da Sonatype. O namespace verificado deve
 ser `br.com.smartverse` (sem ponto no início). Os pacotes internos agora são
 `br.com.smartverse.gonthera.cli`.
@@ -100,7 +100,7 @@ Se a validação falhar, consulte os erros mostrados pelo Portal.
 
 Depois da publicação, aguarde a disponibilização no Maven Central. Uma versão
 publicada é imutável: para mudar o conteúdo, incremente `<version>` no POM.
-A versão `2.1.4` já foi publicada nessas coordenadas; use uma nova versão
+A versão `2.2.2` já foi enviada para publicação nessas coordenadas; use uma nova versão
 para o próximo deploy.
 Esse fluxo é de release; versões `-SNAPSHOT` precisam de configuração própria.
 
@@ -113,7 +113,7 @@ O Maven Central é o repositório padrão do Maven. Adicione este plugin dentro 
 <plugin>
   <groupId>br.com.smartverse</groupId>
   <artifactId>gonthera-cli</artifactId>
-  <version>2.1.4</version>
+  <version>2.2.2</version>
   <executions>
     <execution>
       <id>generate-gonthera-sources</id>
@@ -129,8 +129,8 @@ O Maven Central é o repositório padrão do Maven. Adicione este plugin dentro 
 O bloco `executions` é necessário para integrar a geração ao build: apenas declarar
 o plugin não faz o goal rodar em `mvn clean compile`. Na 2.2.0, a geração também
 registra `target/generated-sources/gonthera` como raiz dos fontes Java nessa mesma
-execução do Maven. A versão 2.1.4 do exemplo usa a saída antiga; ao adotar a 2.2.0,
-atualize a versão e siga a migração descrita no README.
+execução do Maven. O exemplo usa a versão 2.2.2. Para migrar da 2.1.4, siga as instruções de remoção
+das fontes antigas e atualização de imports descritas no README.
 
 Não é necessário configurar `repositories`, `pluginRepositories` ou credenciais
 para baixar o plugin. Se estiver migrando do MyMavenRepo, troque o `groupId`
@@ -146,7 +146,7 @@ mvn gonthera-cli:generate-sources
 Também é possível executar usando as coordenadas completas:
 
 ```bash
-mvn br.com.smartverse:gonthera-cli:2.1.4:validate
+mvn br.com.smartverse:gonthera-cli:2.2.2:validate
 ```
 
 O `mainPackage` dos projetos consumidores continua sendo o pacote da aplicação

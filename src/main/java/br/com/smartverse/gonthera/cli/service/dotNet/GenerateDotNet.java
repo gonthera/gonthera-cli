@@ -30,8 +30,10 @@ public class GenerateDotNet {
         // Limpa os arquivos gerados anteriomente
         dropAndCreateDir(prop.getMainPackage());
 
+        var persistentEntities = prop.getEntities().stream().filter(entity -> !entity.isOnlyDTO()).collect(java.util.stream.Collectors.toList());
+
         // gera a classe das entidaeds
-        generateEntity(prop.getEntities(),prop.getMainPackage(),directory("Entities"));
+        generateEntity(persistentEntities,prop.getMainPackage(),directory("Entities"));
 
         // gera as classes de DTO
         generateDTO(prop.getEntities(),prop.getMainPackage(),directory("Dtos"));
@@ -54,20 +56,20 @@ public class GenerateDotNet {
         generateEnum(prop.getEnums(),prop.getMainPackage(),directory("Enums"));
 
         //Generate dbContext
-        generateDbContext(prop.getEntities(),prop.getMainPackage(),directory("Data"));
+        generateDbContext(persistentEntities,prop.getMainPackage(),directory("Data"));
 
         //Gera o scoped
-        generateScoped(prop.getEntities(),prop.getMainPackage(),directory("Common"));
+        generateScoped(persistentEntities,prop.getMainPackage(),directory("Common"));
 
         // gera os repositories
-        generateIRepositories(prop.getEntities(),prop.getMainPackage(),directory("Repositories"));
-        generateRepositories(prop.getEntities(),prop.getMainPackage(),directory("Repositories"));
+        generateIRepositories(persistentEntities,prop.getMainPackage(),directory("Repositories"));
+        generateRepositories(persistentEntities,prop.getMainPackage(),directory("Repositories"));
 
         // Gera os controllers CRUD
-        generateControllers(prop.getEntities(),prop.getMainPackage(),directory("Controllers"));
+        generateControllers(persistentEntities,prop.getMainPackage(),directory("Controllers"));
 
         //Gera os DTOConverter
-        GenerateDTOConverter.generateDTOConverter(prop.getEntities(),prop.getMainPackage(),directory("Converters"));
+        GenerateDTOConverter.generateDTOConverter(persistentEntities,prop.getMainPackage(),directory("Converters"));
 
         //Gera abstrações de mensageria RabbitMQ
         generateMessaging(prop.getMessaging() == null ? null : prop.getMessaging().getRabbitMq(), prop.getMainPackage(), packagePath);
@@ -79,6 +81,7 @@ public class GenerateDotNet {
         generateMetadata(prop);
 
         generateResources(prop.getEntities(),prop.getEndpoints());
+        DotNetProjectLayout.assemble(Paths.get(loadPath()), packagePath, prop);
     }
 
     private static Path directory(String name) {
@@ -95,12 +98,13 @@ public class GenerateDotNet {
         String path = loadPath();
         String pack = packageName.replace(".","/");
 
-        packagePath = Paths.get(String.format("%s/%s_gen",path,pack));
+        packagePath = Paths.get(path, "target", "gonthera-dotnet-staging");
         Common.resourcePath = Paths.get(String.format("%s/static",path));
         try {
             dropFiles(packagePath);
             Files.deleteIfExists(packagePath);
             Files.createDirectories(packagePath);
+            Files.createDirectories(Common.resourcePath);
         } catch (IOException ex){
             ex.printStackTrace();
         }

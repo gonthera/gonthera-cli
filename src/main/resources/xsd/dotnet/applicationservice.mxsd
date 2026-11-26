@@ -1,0 +1,11 @@
+namespace <<namespace>>;
+public abstract class <<entity>>ServiceBase
+{
+    protected readonly I<<entity>>Repository Repository;
+    protected <<entity>>ServiceBase(I<<entity>>Repository repository) { Repository = repository; }
+    public virtual ResponseData GetAll(RequestData input) => Repository.GetAll(input);
+    public virtual <<entity>>DTO Get(<<key>> id, string displayFields = "") => <<entity>>DTOConverter.ToDTO(Repository.FindById(id, displayFields));
+    public virtual <<entity>>DTO Save(<<entity>>DTO input) => <<entity>>DTOConverter.ToDTO(Repository.Add(<<entity>>DTOConverter.ToEntity(input)));
+    public virtual <<entity>>DTO Update(<<key>> id, <<entity>>DTO input) => <<entity>>DTOConverter.ToDTO(Repository.Update(id, <<entity>>DTOConverter.ToEntity(input)));
+    public virtual void Delete(<<key>> id) => Repository.Delete(id);
+}

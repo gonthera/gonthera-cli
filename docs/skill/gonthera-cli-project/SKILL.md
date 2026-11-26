@@ -26,7 +26,7 @@ Supported targets:
 - `JAVA`: Spring/JPA style generation under `target/generated-sources/gonthera/<mainPackage>` since 2.2.0 (respect Maven `build/directory` and register the generated root for compilation), organized into `entities`, `dtos`, `converters`, `repositories`, `services`, `controllers`, `endpoints`, `enums`, `common`, and `messaging` subpackages; resources remain under `src/main/resources`.
 
 Java CRUD controllers delegate persistence, conversion, filtering, pagination, and transactions to generated `*Service` classes. `serviceAbstract: false` generates a concrete Spring `@Service`; `serviceAbstract: true` generates an abstract class without `@Service` and must produce a validator warning that the consumer needs a concrete Spring bean. Prefer `generateDefaultControllers` and `controllerAbstract`; accept `generateDefaultHandlers` and `handlerAbstract` only as deprecated aliases with warnings and new-name precedence.
-- `DOTNET`: C# generation under `<mainPackage>_gen`, physically organized into `Entities`, `Dtos`, `Converters`, `Repositories`, `Controllers`, `Endpoints`, `Enums`, `Common`, `Data`, and `Messaging`; static files remain under `static`. Generated C# files currently retain the shared root namespace `<mainPackage>.<mainPackage>_Gen` despite the physical folders.
+- `DOTNET`: .NET 10 solution with Domain, Application, Infrastructure and Api projects since 2.2.1. Read `docs/DOTNET.md` and `docs/ai-reference/DOTNET.md`. Only Generated folders are disposable; handwritten partials, concrete implementations, project files and Program.cs are create-once scaffolds. Never overwrite existing consumer code.
 - `NODE`: TypeScript/Express generation under `src/generated` plus a Prisma schema for PostgreSQL or MongoDB, with CRUD converters, relations, query parsing, database configuration, and optional RabbitMQ.
 - SQL: PostgreSQL script generation as `postgree.sql`.
 - Messaging: RabbitMQ generation under `messaging.RabbitMq`.
@@ -201,35 +201,14 @@ The validator must:
 
 When asked to migrate a consumer project, inspect its generated-code extensions and Spring beans before editing. Rename Handler imports/classes to Controller, move business overrides to a concrete generated-service subclass where appropriate, keep HTTP-only overrides in the controller, and check for duplicate beans and duplicate request mappings after the migration.
 
-## .NET CRUD Controllers
+## .NET layered generation
 
-The .NET generator no longer produces `*Handler` or `*HandlerImpl`. For each entity with `generateDefaultControllers: true`, it produces one `Controllers/<Entity>Controller.cs`:
-
-- `controllerAbstract: false` generates a concrete ASP.NET Core controller;
-- `controllerAbstract: true` generates an abstract controller with working CRUD implementations;
-- all CRUD actions are `virtual`, so a consumer subclass can selectively override them and call `base` to preserve generated behavior;
-- `generateDefaultControllers: false` generates no CRUD controller for that entity;
-- the deprecated `generateDefaultHandlers` and `handlerAbstract` aliases still resolve through the shared model, emit warnings, and are never used as generated class names.
-
-Unlike Java, the current .NET CRUD Controller still injects `I<Entity>Repository` directly and owns DTO conversion and CRUD orchestration. Do not tell a .NET consumer that `serviceAbstract` generates a C# service: that property remains Java-only. Adding .NET services requires a separate design that also updates `AddScoped`, constructor injection, templates, and consumer migration.
-
-When `controllerAbstract: true`, a consumer implementation must remain outside `_gen`, pass `I<Entity>Repository` to the base constructor, and be a concrete controller discoverable by ASP.NET Core:
-
-```csharp
-public class CustomerApplicationController : CustomerController
-{
-    public CustomerApplicationController(ICustomerRepository repository) : base(repository)
-    {
-    }
-
-    public override ActionResult<CustomerDTO> Save(CustomerDTO input)
-    {
-        return base.Save(input);
-    }
-}
-```
-
-The .NET output directories are physical organization only for now. Templates still emit the common root namespace, so consumer imports do not gain `.Controllers`, `.Repositories`, or other folder suffixes in this version. Never infer namespace structure from the directory names until the templates are explicitly migrated.
+The current contract is in `docs/DOTNET.md`. Controllers delegate to Application
+services; Infrastructure implements repository contracts. Bases are generated,
+concrete classes are create-once and DI registers the concrete classes. Entities
+and DTOs are partial, with separate handwritten files. `onlyDTO` produces no CRUD.
+Preserve handwritten code on regeneration. Validate using .NET 10 builds and test
+that service/repository overrides and DTO partials still work after regeneration.
 
 ## Must Read First
 
